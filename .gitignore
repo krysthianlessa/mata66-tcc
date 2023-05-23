@@ -2,3 +2,4 @@
 **/venv
 result/run**
 **__pycache__\**
+**/__pycache__/**
