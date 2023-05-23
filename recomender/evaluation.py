@@ -1,4 +1,4 @@
-from recomender.text_processor import TextProcessor
+from recomender.nlp_processor import TextProcessor
 from recomender.recomender_handler import RecomenderHandler
 
 import pandas as pd
@@ -44,21 +44,29 @@ class EvaluationGenerator():
         else:
             return 0.0
 
-    def generate(self, movies_df, ratings_df, pre_process_tec, count=1, frac=0.75, seed=15):
+    def generate(self, items_df, ratings_df, pre_process_tec, count=1, frac=0.75, seed=15):
     
         stopwords, lemma, stemm = pre_process_tec
-        recomender = RecomenderHandler()
-        movies_df = TextProcessor().pre_process(movies_df, stopwords_removal=stopwords, lemmatization=lemma, stemmization=stemm)
-        cosine_sim = pd.DataFrame(recomender.generate_similarity_matrix(movies_df), 
-                                  columns=movies_df.index.to_list(), 
-                                  index=movies_df.index.to_list())
 
+        items_df = TextProcessor().pre_process(items_df, 
+                                                stopwords_removal = stopwords, 
+                                                lemmatization = lemma, 
+                                                stemmization = stemm)
+        recomender = RecomenderHandler(items_df)
+        
         user_ids = set(list(ratings_df.userId))
+
+        if count == 1:
+            try:
+                with open(f'{self.export_folder}/recomendations_{count}.csv', 'w') as recomendations:
+                    recomendations.write(f'user_id,"prc_10",prc_5,prc_3,ap_10,ap_5,ap_3,rr_10,rr_5,rr_3\n')
+            except:
+                pass
 
         for user_id in user_ids:
             profile = ratings_df[ratings_df.userId == user_id]
             
-            relevance = recomender.get_recomendations(movies_df, profile, cosine_sim, frac, seed)
+            relevance = recomender.get_recomendations(items_df, profile)
             
             prc_10 = relevance.count(True) / 10
             ap_10 = self.__get_ap_from_list(relevance)
@@ -77,9 +85,9 @@ class EvaluationGenerator():
             try:
                 with open(f'{self.export_folder}/recomendations_{count}.csv', 'a') as recomendations:
                     recomendations.write(f'{user_id},"{prc_10}",{prc_5},{prc_3},{ap_10},{ap_5},{ap_3},{rr_10},{rr_5},{rr_3}\n')
+            
+                feedback = 'Recomendações do id {} gravado.'.format(user_id)
+                print(feedback, end="\r")
+
             except Exception:
                 print('Falha ao gravar as recomendações do id {}'.format(user_id))
-                with open(f'{self.export_folder}/fails_{count}.csv', 'a') as fails:
-                    fails.write(f'{user_id},"{prc_10}",{prc_5},{prc_3},{ap_10},{ap_5},{ap_3},{rr_10},{rr_5},{rr_3}\n')
-            else:
-                print('Recomendações do id {} gravado.'.format(user_id))

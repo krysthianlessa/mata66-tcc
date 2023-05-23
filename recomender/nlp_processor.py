@@ -39,26 +39,11 @@ class TextProcessor():
             corpus = " ".join([stemmer.stem(token) for token in word_tokenize(corpus)])
             
         return corpus
-
-    def __create_bag_of_words(self, df,columns=["overview", "genres"]) -> pd.DataFrame:
-        df = df.copy()
-        df.loc[:,'bag_of_words'] = ''
-
-        for index, row in df[columns].iterrows():
-        
-            bag_words = ""
-            for col in columns:
-                bag_words = ' '.join(row[col])
-            df.loc[index,'bag_of_words'] = bag_words
-        
-        return df[["bag_of_words", "title"]]
     
     def pre_process(self, movies_df, stopwords_removal=True, lemmatization=True, stemmization=True) -> pd.DataFrame:
         df = movies_df.copy()
-        df['overview'] = df['overview'].apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))
-        df['overview'] = df['overview'].apply(str.split)
-        df = self.__create_bag_of_words(df)
-
+        df['description'] = df['description'].apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))
+        df['description'] = df['description'].apply(str.split)
         return df
     
     

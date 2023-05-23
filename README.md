@@ -24,3 +24,10 @@ $pip3 install -r requirements.txt
 <img src="imgs/ap.png" width="70%" />
 <img src="imgs/map.png" width="70%" />
 <img src="imgs/mrr.png" width="70%" />
+
+<br />
+<br />
+
+### References
+
+Cantador, Iván, Peter Brusilovsky, and Tsvi Kuflik. "Second workshop on information heterogeneity and fusion in recommender systems (HetRec2011)." Proceedings of the fifth ACM conference on Recommender systems. 2011. Doi: https://doi.org/10.1145/2043932.2044016
