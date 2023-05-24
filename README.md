@@ -21,9 +21,9 @@ $pip3 install -r requirements.txt
 
 ## Some results preview
 
-<img src="imgs/ap.png" width="70%" />
-<img src="imgs/map.png" width="70%" />
-<img src="imgs/mrr.png" width="70%" />
+<img src="result/first_run/ap.png" width="70%" />
+<img src="result/first_run/map.png" width="70%" />
+<img src="result/first_run/mrr.png" width="70%" />
 
 <br />
 <br />
