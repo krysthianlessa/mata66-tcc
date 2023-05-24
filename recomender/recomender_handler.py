@@ -1,44 +1,38 @@
-from recomender.nlp_processor import TextProcessor
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
-from pandas import DataFrame
+from pandas import DataFrame, Series
 
 class RecomenderHandler():
     
-    def __init__(self, movies_df):
-        
-        self.cosine_sim = DataFrame(self.generate_similarity_matrix(movies_df), 
-                                  columns=movies_df.index.to_list(), 
-                                  index=movies_df.index.to_list())
+    def __init__(self, items_df:Series, item_desc_col:str="description"):
+        self.item_desc_col = item_desc_col
+        self.cosine_sim_df = DataFrame(self.__generate_similarity_matrix(items_df[item_desc_col]), 
+                                  columns=items_df.index.to_list(), 
+                                  index=items_df.index.to_list())
     
-    def recommender(self, movies_interacteds, movies_to_recomend, cosine_similarity)->list:
+    def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
 
-        similaritys = cosine_similarity[movies_to_recomend][cosine_similarity.index.isin(movies_interacteds)]
+        similaritys = cosine_similarity_matrix[items_to_recomend][cosine_similarity_matrix.index.isin(items_interacteds_ids)]
         average_similarity = similaritys.mean()
         top_10_movies = average_similarity.sort_values(ascending = False).iloc[0:10].index.to_list()
 
         return top_10_movies
     
-    def generate_similarity_matrix(self, df):
+    def __generate_similarity_matrix(self, text_array:Series):
         count = TfidfVectorizer()
-        count_matrix = count.fit_transform(df['bag_of_words'])
-        cosine_sim = cosine_similarity(count_matrix, count_matrix)
-
-        return cosine_sim
-
+        count_matrix = count.fit_transform(text_array)
+        return cosine_similarity(count_matrix, count_matrix)
         
-    def get_recomendations(self, movies_df, profile, frac, seed):
-    
-        train_items = profile.sample(frac=frac, random_state=seed)
-        test_items = profile[~profile.movieId.isin(train_items.movieId)]
+    def get_recomendations(self, items_df:DataFrame, profile_ratings_df:DataFrame, frac:float, seed) -> list:
+        
+        train_profile_ratings = profile_ratings_df.sample(frac=frac, random_state=seed)
+        test_profile_ratings = profile_ratings_df[~profile_ratings_df.itemId.isin(train_profile_ratings.itemId)]
 
-        movies_interacteds = train_items.sample(15).movieId.to_list()
+        items_interacteds = train_profile_ratings.sample(15).itemId.to_list()
+        items_to_recomend = test_profile_ratings.sample(5).itemId.to_list() + items_df.sample(20).index.to_list()
+        items_recomended = self.__recommender(items_interacteds, items_to_recomend, self.cosine_sim_df)
 
-        movies_to_recomend = test_items.sample(5).movieId.to_list() + movies_df.sample(20).index.to_list()
-
-        movies_recomended = self.recommender(movies_interacteds, movies_to_recomend, self.cosine_sim)
-
-        relevance = [True if movie in test_items.movieId.to_list() else False for movie in movies_recomended]
+        relevance = [True if movie in test_profile_ratings.itemId.to_list() else False for movie in items_recomended]
 
         return relevance
     

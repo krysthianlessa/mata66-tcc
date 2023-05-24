@@ -7,8 +7,7 @@ from nltk.stem import PorterStemmer, WordNetLemmatizer
 from unidecode import unidecode
 import nltk
 
-
-class TextProcessor():
+class NLPProcessor():
     
     def __init__(self) -> None:
         try:
@@ -40,10 +39,5 @@ class TextProcessor():
             
         return corpus
     
-    def pre_process(self, movies_df, stopwords_removal=True, lemmatization=True, stemmization=True) -> pd.DataFrame:
-        df = movies_df.copy()
-        df['description'] = df['description'].apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))
-        df['description'] = df['description'].apply(str.split)
-        return df
-    
-    
+    def pre_process(self, text_series:pd.Series, stopwords_removal=True, lemmatization=True, stemmization=True) -> pd.DataFrame:
+        return text_series.apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))    
