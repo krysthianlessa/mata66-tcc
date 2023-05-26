@@ -4,9 +4,8 @@ from pandas import DataFrame, Series
 
 class RecomenderHandler():
     
-    def __init__(self, items_df:Series, item_desc_col:str="description"):
-        self.item_desc_col = item_desc_col
-        self.cosine_sim_df = DataFrame(self.__generate_similarity_matrix(items_df[item_desc_col]), 
+    def __init__(self, items_df:Series):
+        self.cosine_sim_df = DataFrame(self.__generate_similarity_matrix(items_df["description"]), 
                                   columns=items_df.index.to_list(), 
                                   index=items_df.index.to_list())
     

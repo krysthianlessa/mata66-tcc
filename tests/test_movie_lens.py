@@ -28,6 +28,7 @@ class TestMovieLensRecomenderEvaluation(unittest.TestCase):
         
         ratings_df = ratings_dataset.process(movie_processor.missing_desc_ids)
         self.assertTrue(len(ratings_df.index) > len(init_ratings_df.index)*0.3)
+        self.assertTrue(len(ratings_df.userId.unique()) == 465)
 
 if __name__ == '__main__':
     unittest.main()
