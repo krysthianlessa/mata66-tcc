@@ -21,9 +21,7 @@ class RatingDataset():
 
     def process(self, removed_item_ids:list):
 
-        r_max = self.ratings_df.rating.max()
-        self.ratings_df.loc[:,"rating"] = self.to_5_range(self.ratings_df.rating, r_max, self.ratings_df.rating.min())
-
+        self.ratings_df.loc[:,"rating"] = self.to_5_range(self.ratings_df.rating, self.ratings_df.rating.max(), self.ratings_df.rating.min())
         self.ratings_df = self.ratings_df[~self.ratings_df.itemId.isin(removed_item_ids)]
         self.ratings_df.reset_index(inplace=True)
         self.ratings_df.drop(columns=['index'], inplace=True)
@@ -71,10 +69,8 @@ class MovieDataset(ItemDataset):
 
         movies_df = movies_df[~movies_df.itemId.isin(self.missing_desc_ids)]
         movie_details_df = movies_df.set_index("itemId").join(self.items_df.set_index("itemId"), how='left')
-        movie_details_df.reset_index(inplace=True)
         movie_details_df.replace('(no genres listed)', '', inplace=True)
-        movie_details_df.loc[:,'genres'] = movie_details_df['genres'].map(lambda x: x.lower().split('|'))
-        movie_details_df.set_index("itemId", inplace=True)
+        movie_details_df.loc[:,'genres'] = movie_details_df['genres'].str.replace("|"," ")
 
         return self.__create_bag_of_words(movie_details_df)
     
@@ -83,12 +79,8 @@ class MovieDataset(ItemDataset):
         df = df.copy()
         df.loc[:,'bag_of_words'] = ''
 
-        for index, row in df[columns].iterrows():
-        
-            bag_words = ""
-            for col in columns:
-                bag_words = ' '.join(row[col])
-            df.loc[index,'bag_of_words'] = bag_words
+        for col in columns:
+            df.loc[:,"bag_of_words"] = df['bag_of_words'] + df[col]
 
         df.loc[:,"description"] = df["bag_of_words"].apply(self.clean_spaces)
         return df[["description", "title"]]
