@@ -128,7 +128,10 @@ class EvaluationGenerator():
             "recomendations_8": 'todas as técnincas'
         }))
         return self.export_folder
-            
+    
+
+class EvaluationLoader():
+
     def load_recomendations(self, result_folder:str) -> list:
     
         labels_f = open(f"{result_folder}/labels.json", "r")
