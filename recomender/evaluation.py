@@ -3,7 +3,7 @@ from recomender.recomender_handler import RecomenderHandler
 
 import os
 from datetime import datetime
-from pandas import Dataframe, read_csv
+from pandas import DataFrame, read_csv
 import json
 import glob
 
@@ -15,7 +15,19 @@ class EvaluationGenerator():
         self.rating_df = rating_df
         self.recomendations = []
 
-    def get_export_folder(self, name, replace_last):
+        self.labels = {
+            (False, False, False): 'nenhuma técnica',
+            (False, False, True): 'stemm',
+            (False, True, False): 'lemma',
+            (False, True, True): 'stopword',
+            (True, False, False): 'stemm + lemma',
+            (True, False, True): 'stopword + stemm',
+            (True, True, False): 'stopword + lemma',
+            (True, True, True): 'todas as técnincas'
+        }
+
+
+    def get_export_folder(self, name, replace_last) -> str:
         
         if not os.path.isdir(f"result/{name}"):
             os.makedirs(f"result/{name}")
@@ -33,7 +45,7 @@ class EvaluationGenerator():
             pass
         return self.export_folder
     
-    def __reciprocal_rank(self, relevance_array):
+    def __reciprocal_rank(self, relevance_array) -> float:
         relevance_list_size = len(relevance_array)
         if relevance_list_size == 0:
             return 0.0
@@ -58,11 +70,11 @@ class EvaluationGenerator():
         else:
             return 0.0
         
-    def generate(self, combination_techniques:list, frac=0.75, seed=15):
+    def generate_from_combination(self, combination_techniques:list, frac=0.75, seed=15):
         
-        for techniques in combination_techniques:
+        for _, techniques in combination_techniques:
             self.generate(techniques, frac, seed)
-        return self.recomendations
+        return self
     
     def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
     
@@ -91,37 +103,18 @@ class EvaluationGenerator():
                                       "ap_3": self.__avg_precision_from_list(relevance_3),
                                       "rr_10": self.__reciprocal_rank(relevance),
                                       "rr_5": self.__reciprocal_rank(relevance_5),
-                                      'rr_3': self.__reciprocal_rank(relevance_3)})
-            
-        self.recomendations.append(Dataframe(recomendations_i))
+                                      'rr_3': self.__reciprocal_rank(relevance_3)
+                                    })
+            feedback = f"Recomendantions to user {user_id} created."
+            print(feedback, end="\r")
+        self.recomendations.append({"label": self.labels[pre_process_tec], "dataset": DataFrame(recomendations_i)})
         return self
-        
-    def get_recomendations_dfs(self):
-        
-        recomendations = {}
-        labels = {
-            "recomendations_1": 'nenhuma técnica',
-            "recomendations_2": 'stemm',
-            "recomendations_3": 'lemma',
-            "recomendations_4": 'stopword',
-            "recomendations_5": 'stemm + lemma',
-            "recomendations_6": 'stopword + stemm',
-            "recomendations_7": 'stopword + lemma',
-            "recomendations_8": 'todas as técnincas'
-        }
-        
-        for i in range(len(self.recomendations)):
-            recomendations[f"recomendations_{i}"] = {
-                                                        "label": labels[i],
-                                                        "dataset": recomendations[i]
-                                                    }
-        return recomendations
-    
-    def export(self, name, replace_last=False):
+
+    def export(self, name, replace_last=False) -> str:
         self.get_export_folder(name, replace_last)
         
         for i in range(len(self.recomendations)):
-            self.recomendations[i].to_csv(f"{self.export_folder}/reomendations_{i}.csv", index=False)
+            self.recomendations[i]["dataset"].to_csv(f"{self.export_folder}/recomendations_{i}.csv", index=False)
             
         with open(f"{self.export_folder}/labels.json", "w", encoding="utf-8") as labels_file:
             labels_file.write(json.dumps({
@@ -134,6 +127,7 @@ class EvaluationGenerator():
             "recomendations_7": 'stopword + lemma',
             "recomendations_8": 'todas as técnincas'
         }))
+        return self.export_folder
             
     def load_recomendations(self, result_folder:str) -> list:
     

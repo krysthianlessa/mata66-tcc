@@ -3,7 +3,6 @@ from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
 
 import pandas as pd
-import json
 
 if __name__ == "__main__":
     
@@ -32,10 +31,10 @@ if __name__ == "__main__":
     ]
 
     evaluate_generator = EvaluationGenerator(item_df = movie_details_df, 
-                                            rating_df=ratings_df)
-    recomendations_dfs = evaluate_generator.get_recomendations_dfs()
-    
+                                            rating_df=ratings_df).generate_from_combination(combination_pre_process_techniques)
+    export_folder = evaluate_generator.export(name="movie-lens-small", replace_last=True)
+
     plotter = Plotter()
-    plotter.plot_col(recomendations_dfs, "prc", "Average Precision", evaluate_generator.get_export_folder())
-    plotter.plot_col(recomendations_dfs, "ap", "Mean Average Precision", evaluate_generator.get_export_folder())
-    plotter.plot_col(recomendations_dfs, "rr", "Mean Reciprocal Rank", evaluate_generator.get_export_folder())
+    plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision", export_folder)
+    plotter.plot_col(evaluate_generator.recomendations, "ap", "Mean Average Precision", export_folder)
+    plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank", export_folder)
