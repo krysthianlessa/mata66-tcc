@@ -1,5 +1,6 @@
 import pandas as pd
 import os
+import numpy as np
 
 class JesterJokeDataset():
 
@@ -7,7 +8,7 @@ class JesterJokeDataset():
         self.data_source_uri = data_source_uri
 
 
-    def load_items(self, description_matrix_uri:str="description_matrix.csv", export_name="items.csv", rebuild=False):
+    def load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv", rebuild=False):
 
         if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
             return pd.read_csv(f"{self.data_source_uri}/{export_name}")
@@ -22,7 +23,7 @@ class JesterJokeDataset():
             return self.save_and_load_ratings(matrix_ratings_name, export_name)
 
 
-    def save_and_load_items(self, description_matrix_uri:str="description_matrix.csv", export_name="items.csv") -> pd.DataFrame:
+    def save_and_load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv") -> pd.DataFrame:
 
         joke_desc_df = None
         with open(file=f"{self.data_source_uri}/{description_matrix_uri}", mode = "r", encoding="utf8") as brute_desc_file:
@@ -35,21 +36,21 @@ class JesterJokeDataset():
     
     def save_and_load_ratings(self, matrix_name:str="ratings_matrix.csv", export_name="ratings.csv") -> pd.DataFrame:
 
+        user_ratings_matrix = pd.read_csv(f"{self.data_source_uri}/{matrix_name}", header=None)
+        jokes_ids = np.arange(1,len(user_ratings_matrix.loc[0]))
         user_ratings = []
-        with open(file=f"{self.data_source_uri}/{matrix_name}", mode = "r", encoding="utf8") as brute_desc_file:
+
+        for user_id in user_ratings_matrix.index:
+
+            jokes_ratings = user_ratings_matrix.loc[user_id].values
             
-            users_lines = brute_desc_file.readlines()
-            jokes_len = len(users_lines[1].split(","))
-
-            for user_id in range(len(users_lines)):
-
-                jokes_ratings = users_lines[user_id].split(",")
-                for joke_id in range(1,jokes_len):
-                    if "99" == jokes_ratings[joke_id]:
-                        continue
-                    user_ratings.append({"userId": user_id, "itemId": joke_id, "rating": float(jokes_ratings[joke_id])})
+            for joke_id in jokes_ids:
+                if "99" == jokes_ratings[joke_id]:
+                    continue
+                user_ratings.append({"userId": user_id, "itemId": joke_id-1, "rating": float(jokes_ratings[joke_id])})
 
         user_ratings_df = pd.DataFrame(user_ratings)
+
         user_ratings_df.replace(99, None, inplace=True)
         user_ratings_df.dropna(inplace=True)
         user_ratings_df.to_csv(f"{self.data_source_uri}/{export_name}", index=False)

@@ -9,7 +9,7 @@ import glob
 
 class EvaluationGenerator():
     
-    def __init__(self, item_df, rating_df) :
+    def __init__(self, item_df:DataFrame, rating_df:DataFrame, min_user_ratings:int) :
         
         self.item_df = item_df
         self.rating_df = rating_df
@@ -25,7 +25,7 @@ class EvaluationGenerator():
             (True, True, False): 'stopword + lemma',
             (True, True, True): 'todas as técnincas'
         }
-
+        self.min_user_ratings = min_user_ratings
 
     def get_export_folder(self, name, replace_last) -> str:
         
@@ -84,7 +84,7 @@ class EvaluationGenerator():
                                                 stopwords_removal = stopwords, 
                                                 lemmatization = lemma, 
                                                 stemmization = stemm)
-        recomender = RecomenderHandler(items_df)
+        recomender = RecomenderHandler(items_df, self.min_user_ratings)
         user_ids = set(list(self.rating_df.userId))
 
         recomendations_i = []

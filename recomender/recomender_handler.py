@@ -4,10 +4,14 @@ from pandas import DataFrame, Series
 
 class RecomenderHandler():
     
-    def __init__(self, items_df:Series):
+    def __init__(self, items_df:Series, min_user_ratings:int):
         self.cosine_sim_df = DataFrame(self.__generate_similarity_matrix(items_df["description"]), 
                                   columns=items_df.index.to_list(), 
                                   index=items_df.index.to_list())
+        self.min_user_ratings = min_user_ratings
+
+        if self.min_user_ratings < 10:
+            raise Exception("Min user ratings quantity too low. Use one dataset bigger.")
     
     def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
 
@@ -23,12 +27,12 @@ class RecomenderHandler():
         return cosine_similarity(count_matrix, count_matrix)
         
     def get_recomendations(self, items_df:DataFrame, profile_ratings_df:DataFrame, frac:float, seed) -> list:
-        
         train_profile_ratings = profile_ratings_df.sample(frac=frac, random_state=seed)
         test_profile_ratings = profile_ratings_df[~profile_ratings_df.itemId.isin(train_profile_ratings.itemId)]
 
         items_interacteds = train_profile_ratings.sample(15).itemId.to_list()
         items_to_recomend = test_profile_ratings.sample(5).itemId.to_list() + items_df.sample(20).index.to_list()
+
         items_recomended = self.__recommender(items_interacteds, items_to_recomend, self.cosine_sim_df)
 
         relevance = [True if movie in test_profile_ratings.itemId.to_list() else False for movie in items_recomended]

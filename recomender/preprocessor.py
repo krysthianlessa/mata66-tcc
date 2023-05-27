@@ -11,28 +11,19 @@ class RatingDataset():
             self.ratings_df.rename(columns={item_id_col: "itemId"}, inplace=True)
         if user_id_col != "userId":
             self.ratings_df.rename(columns={user_id_col: "userId"}, inplace=True)
-    
-    def to_5_range(self, ratings_arr, r_max, r_min):
-
-        if (r_min >= 0.0 and r_max <= 5.0):
-            return ratings_arr
-
-        return (array(ratings_arr) - r_min)*(5.0/(r_max-r_min))
 
     def process(self, removed_item_ids:list):
-
-        self.ratings_df.loc[:,"rating"] = self.to_5_range(self.ratings_df.rating, self.ratings_df.rating.max(), self.ratings_df.rating.min())
+        
         self.ratings_df = self.ratings_df[~self.ratings_df.itemId.isin(removed_item_ids)]
         self.ratings_df.reset_index(inplace=True)
         self.ratings_df.drop(columns=['index'], inplace=True)
-        self.ratings_df = self.ratings_df[self.ratings_df.rating >= 4.0]
-
+        self.ratings_df = self.ratings_df[self.ratings_df.rating >= self.ratings_df.rating.quantile(0.75)]
         user_counts = DataFrame(self.ratings_df.userId.value_counts())
-        keep_users = user_counts[user_counts['count'] >= user_counts["count"].quantile(0.24)].index
+        self.min_user_ratings = max(user_counts["count"].quantile(0.24), 20)
+        keep_users = user_counts[user_counts['count'] >= self.min_user_ratings].index
         self.ratings_df = self.ratings_df[self.ratings_df.userId.isin(keep_users)]
-
+        
         return self.ratings_df[["itemId", "userId", "rating"]]
-
 
 class ItemDataset():
 
