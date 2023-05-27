@@ -40,4 +40,4 @@ class NLPProcessor():
         return corpus
     
     def pre_process(self, text_series:pd.Series, stopwords_removal=True, lemmatization=True, stemmization=True) -> pd.DataFrame:
-        return text_series.apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))    
+        return text_series.apply(self.__nlp_pre_process, args=(stopwords_removal, lemmatization, stemmization))

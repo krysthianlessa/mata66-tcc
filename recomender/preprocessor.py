@@ -78,9 +78,9 @@ class MovieDataset(ItemDataset):
     def __create_bag_of_words(self, df:DataFrame, columns=["description", "genres"]) -> DataFrame:
         df = df.copy()
         df.loc[:,'bag_of_words'] = ''
-
+        space_col = df['bag_of_words'].copy() + " "
         for col in columns:
-            df.loc[:,"bag_of_words"] = df['bag_of_words'] + df[col]
+            df.loc[:,"bag_of_words"] = df['bag_of_words'] + space_col + df[col]
 
         df.loc[:,"description"] = df["bag_of_words"].apply(self.clean_spaces)
         return df[["description", "title"]]

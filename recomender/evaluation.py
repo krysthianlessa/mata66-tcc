@@ -107,14 +107,17 @@ class EvaluationGenerator():
                                     })
             feedback = f"Recomendantions to user {user_id} created."
             print(feedback, end="\r")
-        self.recomendations.append({"label": self.labels[pre_process_tec], "dataset": DataFrame(recomendations_i)})
+
+        self.recomendations.append({"label": self.labels[pre_process_tec], 
+                                    "dataset": DataFrame(recomendations_i)
+                                    })
         return self
 
     def export(self, name, replace_last=False) -> str:
         self.get_export_folder(name, replace_last)
         
         for i in range(len(self.recomendations)):
-            self.recomendations[i]["dataset"].to_csv(f"{self.export_folder}/recomendations_{i}.csv", index=False)
+            self.recomendations[i]["dataset"].to_csv(f"{self.export_folder}/recomendations_{i+1}.csv", index=False)
             
         with open(f"{self.export_folder}/labels.json", "w", encoding="utf-8") as labels_file:
             labels_file.write(json.dumps({
@@ -132,7 +135,7 @@ class EvaluationGenerator():
 
 class EvaluationLoader():
 
-    def load_recomendations(self, result_folder:str) -> list:
+    def load_recomendations(self, result_folder:str) -> dict:
     
         labels_f = open(f"{result_folder}/labels.json", "r")
         labels = json.loads(labels_f.read())
