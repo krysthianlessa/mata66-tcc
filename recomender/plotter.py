@@ -3,10 +3,11 @@ import matplotlib.pyplot as plt
 
 class Plotter():
 
-    def __init__(self, x = [3, 5, 10], show=False) -> None:
+    def __init__(self, x = [3, 5, 10], show=False, export_folder:str="result/first_run") -> None:
         self.markers = ['.',',','o','v','^','<','>','1','2','3','4','8','s','p','P','*','h','H','+','x','X','D','d','|','_']
         self.x = x
         self.show = show
+        self.export_folder = export_folder
         
     def __get_marker(self, i):
         
@@ -16,7 +17,7 @@ class Plotter():
         else:
             return self.markers[int(i / len_makers)-1]
         
-    def __plot_results(self, results:dict, title:str, export_folder:str="result/first_run"):
+    def __plot_results(self, results:dict, title:str):
         
         if not results:
             print("Results is empty or None")
@@ -34,12 +35,15 @@ class Plotter():
         plt.legend(bbox_to_anchor=(1.04, 1))
         plt.ylabel('Valor')
         plt.xlabel('Tamanho da lista de recomendação')
-        plt.savefig(f"{export_folder}/{title}.png", bbox_inches='tight', format="png")
+
+        if not self.self.export_folder is None:
+            plt.savefig(f"{self.export_folder}/{title}.png", bbox_inches='tight', format="png")
+
         if self.show:
             plt.show()
         plt.close()
 
-    def plot_col(self, recomendations:list, col:str, title:str, export_folder:str):
+    def plot_col(self, recomendations:list, col:str, title:str):
         
         results = []
         for i in range(len(recomendations)):
@@ -49,4 +53,4 @@ class Plotter():
                 "label": recomendations[i]['label'],
                 "marker": self.__get_marker(i)
             })
-        self.__plot_results(results = results, title= title, export_folder = export_folder)
+        self.__plot_results(results = results, title= title)

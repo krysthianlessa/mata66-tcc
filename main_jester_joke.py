@@ -36,7 +36,7 @@ if __name__ == "__main__":
                                             min_user_ratings=rating_processor.min_user_ratings).generate_from_combination(combination_pre_process_techniques)
     export_folder = evaluate_generator.export(name="jester-joke-2.3-million", replace_last=True)
 
-    plotter = Plotter(show=True)
-    plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision", export_folder)
-    plotter.plot_col(evaluate_generator.recomendations, "ap", "Mean Average Precision", export_folder)
-    plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank", export_folder)
+    plotter = Plotter(show=True, export_folder=export_folder)
+    plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision")
+    plotter.plot_col(evaluate_generator.recomendations, "ap", "Mean Average Precision")
+    plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank")
