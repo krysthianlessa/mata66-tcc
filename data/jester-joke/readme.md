@@ -26,3 +26,12 @@ Note that the ratings are real values ranging from -10.00 to +10.00. The jokes {
 Informations found at https://eigentaste.berkeley.edu/dataset/
 
 Explore more: https://www.kdnuggets.com/2016/02/nine-datasets-investigating-recommender-systems.html
+
+
+## Update the datasets:
+
+- Download "Dataset 1: 4.1 million ratings", "Dataset 3: 2.3 million ratings" or other which have millions of ratings
+- Umpack the two files.
+- Export as CSV and name the file with the ratings in matrix shape as "ratings_matrix.csv"
+- Export as CSV and name the file with the details in matrix shape as "descriptions_matrix.csv"
+- Put it on data/jester-joke

@@ -50,7 +50,7 @@ class TestMovieLensRecomenderEvaluation(unittest.TestCase):
         evaluate_generator = EvaluationGenerator(item_df = movie_details_df, 
                                                 rating_df=ratings_df).generate_from_combination(combination_pre_process_techniques)
 
-        recs_metrics_loaded = EvaluationLoader().load_recomendations("result/first_run")
+        recs_metrics_loaded = EvaluationLoader().load_recomendations("result/movie-lens-small/first_run")
         for i in range(len(recs_metrics_loaded)):
             
             rec_metrics = evaluate_generator.recomendations[i]
