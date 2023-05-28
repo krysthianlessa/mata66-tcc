@@ -22,7 +22,8 @@ class RatingDataset():
         self.min_user_ratings = max(user_counts["count"].quantile(0.24), 20)
         keep_users = user_counts[user_counts['count'] >= self.min_user_ratings].index
         self.ratings_df = self.ratings_df[self.ratings_df.userId.isin(keep_users)]
-        
+        print(f"{len(self.ratings_df.index)} final ratings.")
+        print(f"{len(self.ratings_df.userId.unique())} final users.")
         return self.ratings_df[["itemId", "userId", "rating"]]
 
 class ItemDataset():
@@ -45,6 +46,7 @@ class ItemDataset():
     def process(self):
         self.items_df.loc[:,"description"] = self.items_df.description.apply(self.clean_spaces)
         self.items_df.set_index("itemId", inplace=True)
+        print(f"{len(self.items_df.index)} final items.")
         return self.items_df
     
 class MovieDataset(ItemDataset):
@@ -63,6 +65,7 @@ class MovieDataset(ItemDataset):
         movie_details_df.replace('(no genres listed)', '', inplace=True)
         movie_details_df.loc[:,'genres'] = movie_details_df['genres'].str.replace("|"," ")
 
+        print(f"{len(movie_details_df.index)} final items.")
         return self.__create_bag_of_words(movie_details_df)
     
     

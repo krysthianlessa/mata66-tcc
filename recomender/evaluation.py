@@ -4,11 +4,12 @@ from recomender.recomender_handler import RecomenderHandler
 import os
 from datetime import datetime
 from pandas import DataFrame, read_csv
+import numpy as np
 import json
 import glob
 
 class EvaluationGenerator():
-    
+
     def __init__(self, item_df:DataFrame, rating_df:DataFrame, min_user_ratings:int) :
         
         self.item_df = item_df
@@ -74,6 +75,7 @@ class EvaluationGenerator():
         
         for _, techniques in combination_techniques:
             self.generate(techniques, frac, seed)
+        self.metrics_gains_df = self.get_gains_df()
         return self
     
     def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
@@ -130,24 +132,67 @@ class EvaluationGenerator():
             "recomendations_7": 'stopword + lemma',
             "recomendations_8": 'todas as técnincas'
         }))
+        self.metrics_gains_df.to_csv(f"{self.export_folder}/metrics_gains.csv", index=False)
         return self.export_folder
     
+    def get_gains_df(self) -> DataFrame:
+        return DataFrame(self.get_gains("prc") + self.get_gains("ap") + self.get_gains("rr"))
+    
+    def get_gains(self, metric:str) -> list:
+        return self.gains(self.recomendations, metric)
+    
+    def gains(self, recomendations: list, metric="ap") -> list:
+        
+        gains_cuts_list = []
+        combinations_range = np.arange(1, 8)
+        keys_labels = list(self.labels.keys())
+
+        for list_size in [3,5,10]:
+
+            non_tecnique_ap = recomendations[0]['dataset'][f'{metric}_{list_size}'].mean()
+            
+            if non_tecnique_ap == 0:
+                gains_cuts_list.append({"metric": metric, 
+                                        "list_size": list_size, 
+                                        "min_per": 100,
+                                        "max_per": 100,
+                                        "min_technique": "any",
+                                        "max_techinque": "any"})
+            else:
+                gains_cut = []
+                labels = []
+                for combination_p in combinations_range:
+                    gain = ((recomendations[combination_p]['dataset'][f'{metric}_{list_size}'].mean() / non_tecnique_ap) - 1)*100.0
+                    if gain >= 0:
+                        gains_cut.append(gain)
+                        labels.append(self.labels[keys_labels[combination_p]])
+
+                min_p = np.argmin(gains_cut)
+                max_p = np.argmax(gains_cut)
+                gains_cuts_list.append({"metric": metric, 
+                                        "list_size": list_size, 
+                                        "min_per": gains_cut[min_p], 
+                                        "max_per": gains_cut[max_p],
+                                        "min_technique": labels[min_p],
+                                        "max_techinque": labels[max_p]})
+
+        return gains_cuts_list
 
 class EvaluationLoader():
 
-    def load_recomendations(self, result_folder:str) -> dict:
+    def load_recomendations(self, result_folder:str) -> list:
     
         labels_f = open(f"{result_folder}/labels.json", "r")
         labels = json.loads(labels_f.read())
         labels_f.close()
 
         recomendations_uri = glob.glob(result_folder+"/*.csv")
-        recomendations = {}
+        recomendations = []
         for i in range(len(recomendations_uri)):
             name =  os.path.split(recomendations_uri[i])[1].replace(".csv", "")
-            recomendations[name] = {
+            recomendations.append({
                                 "label": labels[name],
                                 "dataset": read_csv(recomendations_uri[i])
-                                }
+                                })
         
         return recomendations

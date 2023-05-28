@@ -18,8 +18,6 @@ if __name__ == "__main__":
                                user_id_col="userId")
     ratings_df = rating_processor.process(item_processor.missing_desc_ids)
 
-    print(f"{len(items_df.index)} itens, {len(ratings_df['userId'].unique())} users, {len(ratings_df.index)} ratings.")
-    print(f"Min user interactions quantity: {rating_processor.min_user_ratings}")
     combination_pre_process_techniques = [
         (1, (False, False, False)),
         (2, (False, False, True)),
@@ -38,5 +36,7 @@ if __name__ == "__main__":
 
     plotter = Plotter(show=True, export_folder=export_folder)
     plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision")
-    plotter.plot_col(evaluate_generator.recomendations, "ap", "Mean Average Precision")
+    plotter.plot_col(evaluate_generator.recomendations, "ap", "Mean Average Precision")    
     plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank")
+
+    print(evaluate_generator.metrics_gains_df)
