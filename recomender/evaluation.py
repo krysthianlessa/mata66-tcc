@@ -166,15 +166,17 @@ class EvaluationGenerator():
                     if gain >= 0:
                         gains_cut.append(gain)
                         labels.append(self.labels[keys_labels[combination_p]])
-
-                min_p = np.argmin(gains_cut)
-                max_p = np.argmax(gains_cut)
-                gains_cuts_list.append({"metric": metric, 
-                                        "list_size": list_size, 
-                                        "min_per": gains_cut[min_p], 
-                                        "max_per": gains_cut[max_p],
-                                        "min_technique": labels[min_p],
-                                        "max_techinque": labels[max_p]})
+                try:
+                    min_p = np.argmin(gains_cut)
+                    max_p = np.argmax(gains_cut)
+                    gains_cuts_list.append({"metric": metric, 
+                                            "list_size": list_size, 
+                                            "min_per": gains_cut[min_p], 
+                                            "max_per": gains_cut[max_p],
+                                            "min_technique": labels[min_p],
+                                            "max_techinque": labels[max_p]})
+                except:
+                    print(f"Error when calculate min and max of metric {metric} and list size {list_size}")
 
         return gains_cuts_list
 

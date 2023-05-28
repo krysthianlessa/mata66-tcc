@@ -6,8 +6,8 @@ from data_loader.jester_joke_dataset import JesterJokeDataset
 def main():
     jester_joke_dataset = JesterJokeDataset("data/jester-joke")
 
-    items_df = jester_joke_dataset.load_items(rebuild=False)
-    ratings_df = jester_joke_dataset.load_ratings(rebuild=False)
+    items_df = jester_joke_dataset.load_items(rebuild=True)
+    ratings_df = jester_joke_dataset.load_ratings(rebuild=True)
 
     item_processor = ItemDataset(items_df, desc_col="description", item_id_col="itemId")
     items_df = item_processor.process()
