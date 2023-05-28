@@ -36,7 +36,7 @@ class Plotter():
         plt.ylabel('Valor')
         plt.xlabel('Tamanho da lista de recomendação')
 
-        if not self.self.export_folder is None:
+        if not self.export_folder is None:
             plt.savefig(f"{self.export_folder}/{title}.png", bbox_inches='tight', format="png")
 
         if self.show:

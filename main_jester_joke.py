@@ -3,9 +3,7 @@ from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
 from data_loader.jester_joke_dataset import JesterJokeDataset
 
-
-if __name__ == "__main__":
-
+def main():
     jester_joke_dataset = JesterJokeDataset("data/jester-joke")
 
     items_df = jester_joke_dataset.load_items(rebuild=False)
@@ -40,3 +38,7 @@ if __name__ == "__main__":
     plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank")
 
     print(evaluate_generator.metrics_gains_df)
+
+
+if __name__ == "__main__":
+    main()

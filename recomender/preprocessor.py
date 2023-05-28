@@ -1,5 +1,4 @@
 from pandas import DataFrame
-from numpy import array
 import re
 
 class RatingDataset():
@@ -11,6 +10,10 @@ class RatingDataset():
             self.ratings_df.rename(columns={item_id_col: "itemId"}, inplace=True)
         if user_id_col != "userId":
             self.ratings_df.rename(columns={user_id_col: "userId"}, inplace=True)
+
+        print(f"{len(ratings_df.userId.unique())} initial users.")
+        print(f"{len(ratings_df.index)} initial ratings.")
+        
 
     def process(self, removed_item_ids:list):
         
@@ -29,6 +32,7 @@ class RatingDataset():
 class ItemDataset():
 
     def __init__(self, items_df: DataFrame, desc_col:str, item_id_col:str) -> None:
+        print(f"{len(items_df.index)} initial items.")
         self.items_df = items_df.copy()
 
         if desc_col != "description":

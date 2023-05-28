@@ -4,8 +4,7 @@ from recomender.plotter import Plotter
 
 import pandas as pd
 
-if __name__ == "__main__":
-    
+def main():
     movies_desc_df = pd.read_csv("data/ml-latest-small/overviews.csv")
     movie_processor = MovieDataset(movies_desc_df,
                         desc_col="overview",
@@ -41,3 +40,6 @@ if __name__ == "__main__":
     plotter.plot_col(evaluate_generator.recomendations, "rr", "Mean Reciprocal Rank")
 
     print(evaluate_generator.metrics_gains_df)
+
+if __name__ == "__main__":
+    main()

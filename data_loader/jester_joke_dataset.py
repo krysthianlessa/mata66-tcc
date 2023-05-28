@@ -6,29 +6,24 @@ class JesterJokeDataset():
 
     def __init__(self, data_source_uri:str) -> None:
         self.data_source_uri = data_source_uri
-
+        
 
     def load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv", rebuild=False):
         
-        dataset_df = None
-
         if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
-            dataset_df = pd.read_csv(f"{self.data_source_uri}/{export_name}")
+            return pd.read_csv(f"{self.data_source_uri}/{export_name}")
         else:
-            dataset_df = self.__save_and_load_items(description_matrix_uri, export_name)
+            return self.__save_and_load_items(description_matrix_uri, export_name)
 
-        print(f"{len(dataset_df.index)} items.")
         
     def load_ratings(self, matrix_ratings_name:str="ratings_matrix.csv", export_name="ratings.csv", rebuild=False):
         
-        dataset_df = None
-        if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
-            dataset_df = pd.read_csv(f"{self.data_source_uri}/{export_name}")
-        else:
-            dataset_df = self.__save_and_load_ratings(matrix_ratings_name, export_name)
-        print(f"{len(dataset_df.userId.unique())} users.")
-        print(f"{len(dataset_df.index)} ratings.")
 
+        if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
+            return pd.read_csv(f"{self.data_source_uri}/{export_name}")
+        else:
+            return self.__save_and_load_ratings(matrix_ratings_name, export_name)
+        
     def __save_and_load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv") -> pd.DataFrame:
 
         joke_desc_df = None
