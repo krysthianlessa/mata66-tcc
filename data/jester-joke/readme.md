@@ -1,6 +1,6 @@
 ## Jester Datasets for Recommender Systems and Collaborative Filtering Research
 <br />
-
+"
 Over 100,000 new ratings from 7,699 total users: data collected 
 - from April 2015 - Nov 2019
 The text of the jokes: jester_dataset_4_joke_texts.zip (30KB)
@@ -22,7 +22,7 @@ The data is formatted as an excel file representing a 7699 by 159 matrix with ro
 Each rating is from (-10.00 to +10.00) and 99 corresponds to a null rating (user did not rate that joke).
 
 Note that the ratings are real values ranging from -10.00 to +10.00. The jokes {1, 2, 3, 4, 5, 6, 9, 10, 11, 12, 14, 20, 27, 31, 43, 51, 52, 61, 73, 80, 100, 116} have been removed (i.e. they are never displayed or rated). As of April 2015, 8 jokes were added.
-
+"
 Informations found at https://eigentaste.berkeley.edu/dataset/
 
 Explore more: https://www.kdnuggets.com/2016/02/nine-datasets-investigating-recommender-systems.html
