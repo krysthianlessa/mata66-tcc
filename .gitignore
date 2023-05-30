@@ -3,3 +3,7 @@
 **/run**
 **__pycache__\**
 **/__pycache__/**
+**.csv
+**.gz
+**.zip
+**.json
