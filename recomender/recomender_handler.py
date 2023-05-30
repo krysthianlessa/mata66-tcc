@@ -10,7 +10,7 @@ class RecomenderHandler():
                                   index=items_df.index.to_list())
         self.min_user_ratings = min_user_ratings
 
-        if self.min_user_ratings < 10:
+        if self.min_user_ratings < 20:
             raise Exception("Min user ratings quantity too low. Use one dataset bigger.")
     
     def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
