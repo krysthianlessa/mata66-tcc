@@ -48,7 +48,7 @@ class ItemDataset():
         return re.sub(r'(?<=[.,])(?=[^\s])', r' ', re.sub(r"\s{2,}", " ", re.sub('[\W+\s[.]]',' ', text))) 
     
     def process(self):
-        self.items_df.loc[:,"description"] = self.items_df.description.apply(self.clean_spaces).str.replace('""', "")
+        self.items_df.loc[:,"description"] = self.items_df.description.apply(self.clean_spaces).str.replace('""', "").replace("\t"," ")
         self.items_df.set_index("itemId", inplace=True)
         print(f"{len(self.items_df.index)} final items.")
         return self.items_df
