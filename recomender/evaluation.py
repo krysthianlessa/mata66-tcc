@@ -93,7 +93,8 @@ class EvaluationGenerator():
         for user_id in user_ids:
             profile_rating = self.rating_df[self.rating_df.userId == user_id]
             
-            relevance = recomender.get_recomendations(items_df, profile_rating, frac, seed)
+            #TODO ISSUE 1: non_user_itens_df = items_df[~items_df.itemId.isin(profile_rating.userId)]
+            relevance = recomender.get_recomendations(self.itens_df, profile_rating, frac, seed)
             relevance_5 = relevance[:5]
             relevance_3 = relevance[:3]
             recomendations_i.append({'user_id': user_id,
