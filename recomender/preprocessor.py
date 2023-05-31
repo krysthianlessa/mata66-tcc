@@ -1,37 +1,35 @@
-from pandas import DataFrame
 import re
+import os
+import pandas as pd
 
 class RatingDataset():
     
-    def __init__(self, ratings_df:DataFrame, item_id_col:str, user_id_col:str):
+    def __init__(self, ratings_df:pd.DataFrame, item_id_col:str, user_id_col:str):
         
         self.ratings_df = ratings_df.copy()
-        if item_id_col != "itemId":
-            self.ratings_df.rename(columns={item_id_col: "itemId"}, inplace=True)
-        if user_id_col != "userId":
-            self.ratings_df.rename(columns={user_id_col: "userId"}, inplace=True)
-
         print(f"{len(ratings_df.userId.unique())} initial users.")
         print(f"{len(ratings_df.index)} initial ratings.")
         
-
-    def process(self, removed_item_ids:list):
+    def process(self, item_ids:list):
         
-        self.ratings_df = self.ratings_df[~self.ratings_df.itemId.isin(removed_item_ids)]
+        self.ratings_df = self.ratings_df[self.ratings_df.itemId.isin(item_ids)]
         self.ratings_df.reset_index(inplace=True)
         self.ratings_df.drop(columns=['index'], inplace=True)
         self.ratings_df = self.ratings_df[self.ratings_df.rating >= self.ratings_df.rating.quantile(0.75)]
-        user_counts = DataFrame(self.ratings_df.userId.value_counts())
+        user_counts = pd.DataFrame(self.ratings_df.userId.value_counts())
         self.min_user_ratings = max(user_counts["count"].quantile(0.24), 20)
         keep_users = user_counts[user_counts['count'] >= self.min_user_ratings].index
         self.ratings_df = self.ratings_df[self.ratings_df.userId.isin(keep_users)]
+
         print(f"{len(self.ratings_df.index)} final ratings.")
         print(f"{len(self.ratings_df.userId.unique())} final users.")
-        return self.ratings_df[["itemId", "userId", "rating"]]
+
+        self.ratings_df = self.ratings_df[["itemId", "userId", "rating"]]
+        return self.ratings_df
 
 class ItemDataset():
 
-    def __init__(self, items_df: DataFrame, desc_col:str, item_id_col:str) -> None:
+    def __init__(self, items_df: pd.DataFrame, desc_col:str, item_id_col:str) -> None:
         print(f"{len(items_df.index)} initial items.")
         self.items_df = items_df.copy()
 
@@ -52,35 +50,3 @@ class ItemDataset():
         self.items_df.set_index("itemId", inplace=True)
         print(f"{len(self.items_df.index)} final items.")
         return self.items_df
-    
-class MovieDataset(ItemDataset):
-
-    def __init__(self, description_df:DataFrame, desc_col:str, item_id_col:str) -> None:
-        super(MovieDataset, self).__init__(items_df=description_df, desc_col=desc_col, item_id_col=item_id_col)
-    
-    def join_and_process(self, movies_df:DataFrame, item_id_col:str) -> DataFrame:
-
-        movies_df = movies_df.copy()
-        if item_id_col != "itemId":
-            movies_df.rename(columns={item_id_col: "itemId"}, inplace=True)
-
-        movies_df = movies_df[~movies_df.itemId.isin(self.missing_desc_ids)]
-        movie_details_df = movies_df.set_index("itemId").join(self.items_df.set_index("itemId"), how='left')
-        movie_details_df.replace('(no genres listed)', '', inplace=True)
-        movie_details_df.loc[:,'genres'] = movie_details_df['genres'].str.replace("|"," ")
-
-        print(f"{len(movie_details_df.index)} final items.")
-        return self.__create_bag_of_words(movie_details_df)
-    
-    
-    def __create_bag_of_words(self, df:DataFrame, columns=["description", "genres"]) -> DataFrame:
-        df = df.copy()
-        df.loc[:,'bag_of_words'] = ''
-        space_col = df['bag_of_words'].copy() + " "
-        for col in columns:
-            df.loc[:,"bag_of_words"] = df['bag_of_words'] + space_col + df[col]
-
-        df.loc[:,"description"] = df["bag_of_words"].apply(self.clean_spaces)
-        return df[["description", "title"]]
-    
-    

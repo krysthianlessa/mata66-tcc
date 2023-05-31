@@ -1,5 +1,5 @@
 from recomender.preprocessor import ItemDataset, RatingDataset
-from data_loader.jester_joke_dataset import JesterJokeDataset
+from data_loader.jester_joke_loader import JesterJokeLoader
 
 import pandas as pd
 
@@ -12,7 +12,7 @@ class TestJesterJokeRecomender(unittest.TestCase):
   
     def test_main(self):
         
-        jester_joke_loader = JesterJokeDataset(data_source_uri="data/jester-joke")
+        jester_joke_loader = JesterJokeLoader(data_source_uri="data/jester-joke")
 
         items_processor = ItemDataset(jester_joke_loader.load_items(),
                             desc_col="description",

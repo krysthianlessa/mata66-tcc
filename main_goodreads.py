@@ -1,13 +1,15 @@
 from recomender.preprocessor import RatingDataset, ItemDataset
 from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
-from data_loader.jester_joke_loader import JesterJokeLoader
+from data_loader.goodreads_loader import GoodReadsLoader
+
 
 def main():
-    jester_joke_dataset = JesterJokeLoader("data/jester-joke")
 
-    items_df = jester_joke_dataset.load_items(rebuild=True)
-    ratings_df = jester_joke_dataset.load_ratings(rebuild=True)
+    good_reads_loader = GoodReadsLoader()
+
+    items_df = good_reads_loader.load_items()
+    ratings_df = good_reads_loader.load_ratings()
 
     item_processor = ItemDataset(items_df, desc_col="description", item_id_col="itemId")
     items_df = item_processor.process()
@@ -30,7 +32,7 @@ def main():
     evaluate_generator = EvaluationGenerator(item_df = items_df, 
                                             rating_df=ratings_df,
                                             min_user_ratings=rating_processor.min_user_ratings).generate_from_combination(combination_pre_process_techniques)
-    export_folder = evaluate_generator.export(name="jester-joke-2.3-million", replace_last=True)
+    export_folder = evaluate_generator.export(name="goodreads-datasets", replace_last=True)
 
     plotter = Plotter(show=True, export_folder=export_folder)
     plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision")

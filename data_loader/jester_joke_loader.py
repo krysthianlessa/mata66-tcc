@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import numpy as np
 
-class JesterJokeDataset():
+class JesterJokeLoader():
 
     def __init__(self, data_source_uri:str) -> None:
         self.data_source_uri = data_source_uri
