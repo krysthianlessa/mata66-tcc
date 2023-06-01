@@ -9,26 +9,21 @@ from processor.dataset_limiter import RatingItemsLimiter
 
 class GoodReadsLoader(Loader):
 
-    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_items=600, top_users_quantile=0.75, buttom_users_quantile=0.25) -> None:
+    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_items=600, top_users_quantile=0.75, bottom_users_quantile=0.25) -> None:
         super().__init__()
         
         self.data_source_uri = data_source_uri
+        self.limiter = RatingItemsLimiter()
 
         self.item_processor = ItemProcessor(self.__load_items())
         self.items_df = self.item_processor.process()
         self.ratings_df = RatingProcessor(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
-
-        self.limiter = RatingItemsLimiter(self.items_df, self.ratings_df).limit(max_items, 
-                                                                           top_users_quantile,
-                                                                           buttom_users_quantile,
-                                                                           data_uri=data_source_uri)
-        self.items_df = self.limiter.items_df
-        self.ratings_df = self.limiter.ratings_df
+        self.items_df, self.ratings_df = self.limiter.limit(self.items_df, self.ratings_df)
 
     def __load_items(self, rebuild=False) -> pd.DataFrame:
 
-        if not rebuild and os.path.isfile(f"{self.data_source_uri}/{self.limiter.item_cut_uri}"):
-            items_df = pd.read_csv(f"{self.data_source_uri}/{self.limiter.item_cut_uri}")
+        if not rebuild and os.path.isfile(self.limiter.item_cut_uri):
+            items_df = pd.read_csv(self.limiter.item_cut_uri)
 
             if len(items_df) < 100:
                 items_df = pd.read_csv(f"{self.data_source_uri}/items_df.csv")
@@ -42,8 +37,8 @@ class GoodReadsLoader(Loader):
 
     def __load_ratings(self, rebuild=False):
 
-        if not rebuild and os.path.isfile(f"{self.data_source_uri}/{self.limiter.ratings_cut_uri}"):
-            ratings_df = pd.read_csv(f"{self.data_source_uri}/{self.limiter.ratings_cut_uri}")
+        if not rebuild and os.path.isfile(self.limiter.ratings_cut_uri):
+            ratings_df = pd.read_csv(self.limiter.ratings_cut_uri)
 
             if len(ratings_df) < 100:
                 return pd.read_csv(f"{self.data_source_uri}/ratings_df.csv")
