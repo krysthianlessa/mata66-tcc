@@ -50,3 +50,4 @@ class ItemDataset():
         self.items_df.set_index("itemId", inplace=True)
         print(f"{len(self.items_df.index)} final items.")
         return self.items_df
+    
