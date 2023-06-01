@@ -1,4 +1,5 @@
-from processor.dataset_limiter import RatingProcessor, ItemProcessor
+from processor.ratings_procesor import RatingProcessor
+from processor.items_processor import ItemProcessor
 from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
 from data_loader.jester_joke_loader import JesterJokeLoader

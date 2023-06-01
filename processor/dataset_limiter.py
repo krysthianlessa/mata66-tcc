@@ -1,6 +1,3 @@
-from processor.items_processor import ItemProcessor
-from processor.ratings_procesor import RatingProcessor
-
 import pandas as pd
 
 class RatingItemsLimiter():
