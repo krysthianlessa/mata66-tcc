@@ -7,35 +7,36 @@ from data_loader.loader import Loader
 
 class GoodReadsLoader(Loader):
 
-    def __init__(self, data_source_uri="data/goodreads-datasets", rebuild=False) -> None:
+    def __init__(self, data_source_uri="data/goodreads-datasets/children", rebuild=False) -> None:
         super().__init__()
         self.data_source_uri = data_source_uri
 
     def load_items(self, rebuild=False) -> pd.DataFrame:
-        items_df = None
+
         if not rebuild and os.path.isfile(f"{self.data_source_uri}/items_df.csv"):
-            items_df = pd.read_csv(f"{self.data_source_uri}/items_df.csv")
+            return pd.read_csv(f"{self.data_source_uri}/items_df.csv")
         else:
-            items_df = self.__build_items_df()
-        print(f"{len(items_df.index)} items.")
-        return items_df
+            return self.__build_items_df()
 
     def load_ratings(self, rebuild=False):
-        ratings_df = None
-        if not rebuild and os.path.isdir(f"{self.data_source_uri}/ratings_df.csv"):
-            ratings_df = pd.read_csv(f"{self.data_source_uri}/ratings_df.csv")
+        if not rebuild and os.path.isfile(f"{self.data_source_uri}/ratings_df.csv"):
+            return pd.read_csv(f"{self.data_source_uri}/ratings_df.csv")
         else:
-            ratings_df = self.__build_ratings_df()
-        print(f"{len(ratings_df.userId.unique())} users.")
-        print(f"{len(ratings_df.index)} ratings.")
-        return ratings_df
+            return self.__build_ratings_df()
     
     def __build_ratings_df(self) -> pd.DataFrame:
-
-        chunk_ratings_df = pd.read_csv(f"{self.data_source_uri}/goodreads_interactions.csv")[['user_id', 'book_id', 'rating']]
-        chunk_ratings_df = chunk_ratings_df[chunk_ratings_df.rating > 0].rename(columns={"book_id": "itemId", "user_id": "userId"})
-        chunk_ratings_df.to_csv(f"{self.data_source_uri}/ratings_df.csv", index=False)
-        return chunk_ratings_df
+        
+        print("building ratings_df...")
+        chunks = pd.read_json(f"{self.data_source_uri}/ratings.json", lines=True, chunksize = 128)
+        dataset_list = []
+        for chunk_ratings_df in chunks:
+            chunk_ratings_df = chunk_ratings_df[['user_id','book_id', 'rating']]
+            dataset_list.append(chunk_ratings_df[chunk_ratings_df['rating'] > 0])
+        
+        chunks.close()
+        dataset = pd.concat(dataset_list).rename(columns={"user_id": "userId", "book_id": "bookId"})
+        dataset.to_csv(f"{self.data_source_uri}/ratings_df.csv", index=False)
+        return dataset
 
     def __build_items_df(self) -> pd.DataFrame:
         print("building items_df...")
@@ -53,5 +54,8 @@ class GoodReadsLoader(Loader):
 
         chunks.close()
         dataset_df = pd.concat(dataset_list).rename(columns={"book_id": "itemId"})
+        dataset_df.loc[:,"empty"] = " "
+        dataset_df.loc[:,"description"] = dataset_df['description'].astype(str) + dataset_df['empty'].astype(str) + dataset_df['title'].astype(str)
+        dataset_df = dataset_df[['itemId','description']]
         dataset_df.to_csv(f"{self.data_source_uri}/items_df.csv", index=False)
         return dataset_df

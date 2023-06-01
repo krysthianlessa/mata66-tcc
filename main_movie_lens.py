@@ -29,8 +29,8 @@ def main():
         (8, (True, True, True)),
     ]
 
-    evaluate_generator = EvaluationGenerator(item_df = movie_details_df, 
-                                            rating_df=ratings_df,
+    evaluate_generator = EvaluationGenerator(items_df = movie_details_df, 
+                                            ratings_df=ratings_df,
                                             min_user_ratings=ratings_processor.min_user_ratings).generate_from_combination(combination_pre_process_techniques)
     export_folder = evaluate_generator.export(name="movie-lens-small", replace_last=True)
 

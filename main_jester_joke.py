@@ -27,8 +27,8 @@ def main():
         (8, (True, True, True)),
     ]
 
-    evaluate_generator = EvaluationGenerator(item_df = items_df, 
-                                            rating_df=ratings_df,
+    evaluate_generator = EvaluationGenerator(items_df = items_df, 
+                                            ratings_df=ratings_df,
                                             min_user_ratings=rating_processor.min_user_ratings).generate_from_combination(combination_pre_process_techniques)
     export_folder = evaluate_generator.export(name="jester-joke-2.3-million", replace_last=True)
 

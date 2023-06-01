@@ -47,8 +47,8 @@ class TestMovieLensRecomenderEvaluation(unittest.TestCase):
             (8, (True, True, True)),
         ]
 
-        evaluate_generator = EvaluationGenerator(item_df = movie_details_df, 
-                                                rating_df=ratings_df).generate_from_combination(combination_pre_process_techniques)
+        evaluate_generator = EvaluationGenerator(items_df = movie_details_df, 
+                                                ratings_df=ratings_df).generate_from_combination(combination_pre_process_techniques)
 
         recs_metrics_loaded = EvaluationLoader().load_recomendations("result/movie-lens-small/first_run")
         for i in range(len(recs_metrics_loaded)):

@@ -10,32 +10,49 @@ def main():
 
     items_df = None
     ratings_df = None
+    data_source_uri = "data/goodreads-datasets/children"
+    
+    if os.path.isfile(f"{data_source_uri}/ratings_cut_df.csv"):
+        items_df = pd.read_csv(f"{data_source_uri}/items_cut_df.csv")
+        ratings_df = pd.read_csv(f"{data_source_uri}/ratings_cut_df.csv")
 
-    if os.path.isdir("data/goodreads-datasets/ratings_cut_df.csv"):
-        items_df = pd.read_csv("data/goodreads-datasets/items_cut_df.csv")
-        ratings_df = pd.read_csv("data/goodreads-datasets/ratings_cut_df.csv")
+        if len(ratings_df) < 100 or len(items_df) < 100:
+            items_df = pd.read_csv(f"{data_source_uri}/items_df.csv")
+            ratings_df = pd.read_csv(f"{data_source_uri}/ratings_df.csv")
+            
+        items_df.set_index("itemId", inplace=True)
     else:
         good_reads_loader = GoodReadsLoader()
 
         items_df = good_reads_loader.load_items()
         ratings_df = good_reads_loader.load_ratings()
 
-        item_processor = ItemDataset(items_df, desc_col="description", item_id_col="itemId")
+        item_processor = ItemDataset(items_df)
         items_df = item_processor.process()
-        rating_processor = RatingDataset(ratings_df,
-                                item_id_col="itemId", 
-                                user_id_col="userId")
+        
+        rating_processor = RatingDataset(ratings_df)
         ratings_df = rating_processor.process(item_processor.missing_desc_ids)
 
-        print("Reducing to have up to 1000 items")
-        items_ids = pd.DataFrame(ratings_df['itemId'].value_counts()).iloc[0:1000].index
-        ratings_df = ratings_df[ratings_df['itemId'].isin(items_ids)]
-        items_df = items_df[items_df.index.isin(items_ids)]
+    users_qtd = 500
 
-        ratings_df.to_csv("data/goodreads-datasets/ratings_cut_df.csv", index=False)
-        items_df.to_csv("data/goodreads-datasets/items_cut_df.csv")
+    print(f"Reducing to have up to {users_qtd} users")
+    
+    users_ratings_counts_df = pd.DataFrame(ratings_df['userId'].value_counts())
+    users_ratings_counts_df = users_ratings_counts_df[users_ratings_counts_df['count'] < users_ratings_counts_df['count'].quantile(0.85)]
+    users_ratings_counts_df = users_ratings_counts_df[users_ratings_counts_df['count'] > 20].iloc[0:users_qtd]
+    ratings_df = ratings_df[ratings_df['userId'].isin(users_ratings_counts_df.index)]
+    items_df = items_df[items_df.index.isin(ratings_df.itemId.unique())]
+    
+    items_ratins_counts_df = pd.DataFrame(ratings_df['itemId'].value_counts())
+    items_ratins_counts_df = items_ratins_counts_df[items_ratins_counts_df['count'] < items_ratins_counts_df['count'].quantile(0.75)]
+    items_ratins_counts_df = items_ratins_counts_df[items_ratins_counts_df['count'] > items_ratins_counts_df['count'].quantile(0.25)]
+    ratings_df = ratings_df[ratings_df['itemId'].isin(items_ratins_counts_df.index)]
+    items_df = items_df[items_df.index.isin(items_ratins_counts_df.index)]
+    
+    ratings_df.to_csv(f"{data_source_uri}/ratings_cut_df.csv", index=False)
+    items_df.to_csv(f"{data_source_uri}/items_cut_df.csv")
 
-    print("Final quantities: ")
+    print("Cut quantities: ")
     print(f"{len(items_df.index)} items")
     print(f"{len(ratings_df.index)} ratings")
     print(f"{len(ratings_df.userId.unique())} users")
@@ -51,10 +68,10 @@ def main():
         (8, (True, True, True)),
     ]
 
-    evaluate_generator = EvaluationGenerator(item_df = items_df, 
-                                            rating_df=ratings_df,
+    evaluate_generator = EvaluationGenerator(items_df = items_df, 
+                                            ratings_df=ratings_df,
                                             min_user_ratings=20).generate_from_combination(combination_pre_process_techniques)
-    export_folder = evaluate_generator.export(name="goodreads-datasets", replace_last=True)
+    export_folder = evaluate_generator.export(name="goodreads-children", replace_last=True)
 
     plotter = Plotter(show=True, export_folder=export_folder)
     plotter.plot_col(evaluate_generator.recomendations, "prc", "Average Precision")
