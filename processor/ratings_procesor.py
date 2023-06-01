@@ -19,8 +19,5 @@ class RatingProcessor():
         keep_users = user_counts[user_counts['count'] >= self.min_user_ratings].index
         self.ratings_df = self.ratings_df[self.ratings_df.userId.isin(keep_users)]
 
-        print(f"{len(self.ratings_df.index)} final ratings.")
-        print(f"{len(self.ratings_df.userId.unique())} final users.")
-
         self.ratings_df = self.ratings_df[["itemId", "userId", "rating"]]
         return self.ratings_df

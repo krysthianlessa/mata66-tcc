@@ -9,11 +9,11 @@ from processor.dataset_limiter import RatingItemsLimiter
 
 class GoodReadsLoader(Loader):
 
-    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_items=600, top_users_quantile=0.75, bottom_users_quantile=0.25) -> None:
+    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_users=6000, top_users_quantile=0.75, bottom_users_quantile=0.25, min_ratings=20) -> None:
         super().__init__()
         
         self.data_source_uri = data_source_uri
-        self.limiter = RatingItemsLimiter()
+        self.limiter = RatingItemsLimiter(max_users, top_users_quantile, bottom_users_quantile, min_ratings, data_source_uri)
 
         self.item_processor = ItemProcessor(self.__load_items())
         self.items_df = self.item_processor.process()
@@ -22,14 +22,13 @@ class GoodReadsLoader(Loader):
 
     def __load_items(self, rebuild=False) -> pd.DataFrame:
 
-        if not rebuild and os.path.isfile(self.limiter.item_cut_uri):
-            items_df = pd.read_csv(self.limiter.item_cut_uri)
+        if not rebuild and os.path.isfile(self.limiter.items_cut_uri):
+            items_df = pd.read_csv(self.limiter.items_cut_uri)
 
             if len(items_df) < 100:
                 items_df = pd.read_csv(f"{self.data_source_uri}/items_df.csv")
-                
-            items_df.set_index("itemId", inplace=True)
-
+ 
+            return items_df
         elif not rebuild and os.path.isfile(f"{self.data_source_uri}/items_df.csv"):
             return pd.read_csv(f"{self.data_source_uri}/items_df.csv")
         else:

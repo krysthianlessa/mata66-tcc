@@ -15,6 +15,5 @@ class ItemProcessor():
     def process(self):
         self.items_df.loc[:,"description"] = self.items_df.description.apply(self.clean_spaces).str.replace('""', "").replace("\t"," ")
         self.items_df.set_index("itemId", inplace=True)
-        print(f"{len(self.items_df.index)} final items.")
         return self.items_df
     

@@ -10,7 +10,7 @@ import glob
 
 class EvaluationGenerator():
 
-    def __init__(self, items_df:DataFrame, ratings_df:DataFrame, min_user_ratings:int) :
+    def __init__(self, items_df:DataFrame, ratings_df:DataFrame) :
         
         self.items_df = items_df
         self.rating_df = ratings_df
@@ -26,7 +26,6 @@ class EvaluationGenerator():
             (True, True, False): 'stopword + lemma',
             (True, True, True): 'todas as técnincas'
         }
-        self.min_user_ratings = min_user_ratings
 
     def get_export_folder(self, name, replace_last) -> str:
         
@@ -71,22 +70,23 @@ class EvaluationGenerator():
         else:
             return 0.0
         
-    def generate_from_combination(self, combination_techniques:list, frac=0.75, seed=15):
+    def generate_from_combination(self, frac=0.75, seed=15):
         
-        for _, techniques in combination_techniques:
+        for techniques in self.labels.keys():
             self.generate(techniques, frac, seed)
         self.metrics_gains_df = self.get_gains_df()
         return self
     
     def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
-    
-        stopwords, lemma, stemm = pre_process_tec
         items_df = self.items_df.copy()
-        items_df.loc[:,"description"] = NLPProcessor().pre_process(self.items_df["description"], 
+        
+        stopwords, lemma, stemm = pre_process_tec
+        
+        items_df.loc[:,"description"] = NLPProcessor().pre_process(items_df["description"], 
                                                 stopwords_removal = stopwords, 
                                                 lemmatization = lemma, 
                                                 stemmization = stemm)
-        recomender = RecomenderHandler(items_df, self.min_user_ratings)
+        recomender = RecomenderHandler(items_df)
         user_ids = set(list(self.rating_df.userId))
 
         recomendations_i = []
@@ -94,7 +94,7 @@ class EvaluationGenerator():
             profile_rating = self.rating_df[self.rating_df.userId == user_id]
             
             #TODO ISSUE 1: non_user_itens_df = items_df[~items_df.itemId.isin(profile_rating.userId)]
-            relevance = recomender.get_recomendations(self.items_df, profile_rating, frac, seed)
+            relevance = recomender.get_recomendations(items_df, profile_rating, frac, seed)
             relevance_5 = relevance[:5]
             relevance_3 = relevance[:3]
             recomendations_i.append({'user_id': user_id,

@@ -4,22 +4,18 @@ from pandas import DataFrame, Series
 
 class RecomenderHandler():
     
-    def __init__(self, items_df:Series, min_user_ratings:int):
+    def __init__(self, items_df:Series):
+        items_ids = items_df.index.to_list()
         self.cosine_sim_df = DataFrame(self.__generate_similarity_matrix(items_df["description"]), 
-                                  columns=items_df.index.to_list(), 
-                                  index=items_df.index.to_list())
-        self.min_user_ratings = min_user_ratings
-
-        if self.min_user_ratings < 20:
-            raise Exception("Min user ratings quantity too low. Use one dataset bigger.")
+                                  columns=items_ids, 
+                                  index=items_ids)
     
     def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
 
         similaritys = cosine_similarity_matrix[items_to_recomend][cosine_similarity_matrix.index.isin(items_interacteds_ids)]
-        average_similarity = similaritys.mean()
-        top_10_movies = average_similarity.sort_values(ascending = False).iloc[0:10].index.to_list()
+        top_10_items = similaritys.mean().sort_values(ascending = False).iloc[0:10].index.to_list()
 
-        return top_10_movies
+        return top_10_items
     
     def __generate_similarity_matrix(self, text_array:Series):
         count = TfidfVectorizer()
@@ -34,7 +30,6 @@ class RecomenderHandler():
         items_to_recomend = test_profile_ratings.sample(5).itemId.to_list() + items_df.sample(20).index.to_list()
 
         items_recomended = self.__recommender(items_interacteds, items_to_recomend, self.cosine_sim_df)
-
         relevance = [True if movie in test_profile_ratings.itemId.to_list() else False for movie in items_recomended]
 
         return relevance
