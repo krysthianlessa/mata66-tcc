@@ -1,4 +1,4 @@
-from recomender.preprocessor import RatingDataset, ItemDataset
+from processor.dataset_limiter import RatingProcessor, ItemProcessor
 from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
 from data_loader.jester_joke_loader import JesterJokeLoader
@@ -9,9 +9,9 @@ def main():
     items_df = jester_joke_dataset.load_items(rebuild=True)
     ratings_df = jester_joke_dataset.load_ratings(rebuild=True)
 
-    item_processor = ItemDataset(items_df, desc_col="description", item_id_col="itemId")
+    item_processor = ItemProcessor(items_df, desc_col="description", item_id_col="itemId")
     items_df = item_processor.process()
-    rating_processor = RatingDataset(ratings_df,
+    rating_processor = RatingProcessor(ratings_df,
                                item_id_col="itemId", 
                                user_id_col="userId")
     ratings_df = rating_processor.process(item_processor.missing_desc_ids)

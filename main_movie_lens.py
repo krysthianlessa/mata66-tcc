@@ -1,22 +1,19 @@
-from recomender.preprocessor import RatingDataset, MovieDataset
+from processor.ratings_procesor import RatingProcessor
+from processor.items_processor import ItemProcessor
+
 from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
-
-import pandas as pd
+from data_loader.movielens_loader import MovieLoader
 
 def main():
-    movies_desc_df = pd.read_csv("data/ml-latest-small/overviews.csv")
-    movie_processor = MovieDataset(movies_desc_df,
-                        desc_col="overview",
-                        item_id_col="movieId")
 
-    movie_details_df = movie_processor.join_and_process(movies_df=pd.read_csv('data/ml-latest-small/movies.csv'),
-                                                        item_id_col="movieId")
-
-    ratings_processor = RatingDataset(ratings_df=pd.read_csv('data/ml-latest-small/ratings.csv'), 
+    movie_loader = MovieLoader("data/ml-latest-small/")
+    item_processor = ItemProcessor(movie_loader.load_itens())
+    
+    items_df = item_processor.process()
+    ratings_df = RatingProcessor(ratings_df=movie_loader.load_ratings(), 
                                     item_id_col="movieId", 
-                                    user_id_col="userId")
-    ratings_df = ratings_processor.process(movie_processor.missing_desc_ids)
+                                    user_id_col="userId").process(item_processor.missing_desc_ids)
 
     combination_pre_process_techniques = [
         (1, (False, False, False)),
@@ -29,9 +26,9 @@ def main():
         (8, (True, True, True)),
     ]
 
-    evaluate_generator = EvaluationGenerator(items_df = movie_details_df, 
+    evaluate_generator = EvaluationGenerator(items_df = items_df, 
                                             ratings_df=ratings_df,
-                                            min_user_ratings=ratings_processor.min_user_ratings).generate_from_combination(combination_pre_process_techniques)
+                                            min_user_ratings=20).generate_from_combination(combination_pre_process_techniques)
     export_folder = evaluate_generator.export(name="movie-lens-small", replace_last=True)
 
     plotter = Plotter(show=True, export_folder=export_folder)

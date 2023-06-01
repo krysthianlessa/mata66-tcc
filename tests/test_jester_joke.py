@@ -1,4 +1,4 @@
-from recomender.preprocessor import ItemDataset, RatingDataset
+from processor.dataset_limiter import ItemProcessor, RatingProcessor
 from data_loader.jester_joke_loader import JesterJokeLoader
 
 import pandas as pd
@@ -14,16 +14,12 @@ class TestJesterJokeRecomender(unittest.TestCase):
         
         jester_joke_loader = JesterJokeLoader(data_source_uri="data/jester-joke")
 
-        items_processor = ItemDataset(jester_joke_loader.load_items(),
-                            desc_col="description",
-                            item_id_col="itemId")
+        items_processor = ItemProcessor(jester_joke_loader.load_items())
         items_df = items_processor.process()
         
         self.assertTrue(not items_df['description'].hasnans)
 
-        ratings_processor = RatingDataset(ratings_df=jester_joke_loader.load_ratings(), 
-                                item_id_col="movieId", 
-                                user_id_col="userId")
+        ratings_processor = RatingProcessor(ratings_df=jester_joke_loader.load_ratings())
         self.assertTrue("itemId" in ratings_processor.ratings_df.columns, ratings_processor.ratings_df.columns)
         
         ratings_df = ratings_processor.process(items_processor.missing_desc_ids)

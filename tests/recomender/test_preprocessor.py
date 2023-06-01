@@ -1,4 +1,4 @@
-from recomender.preprocessor import RatingDataset, MovieDataset
+from processor.dataset_limiter import RatingProcessor, MovieDataset
 
 import pandas as pd
 import numpy as np
@@ -15,7 +15,7 @@ class TestRatingDataset(unittest.TestCase):
         ratings_df = pd.DataFrame({"rating": rating_range,
                                    "itemId": np.arange(len(rating_range)),
                                    "userId": np.arange(len(rating_range))})
-        rating_dataset = RatingDataset(ratings_df, item_id_col="itemId", user_id_col="userId")
+        rating_dataset = RatingProcessor(ratings_df, item_id_col="itemId", user_id_col="userId")
         ratings_p_df = rating_dataset.process([1,2,3,4])
 
         self.assertTrue(len(ratings_p_df.index) == 4, len(ratings_p_df.index))
