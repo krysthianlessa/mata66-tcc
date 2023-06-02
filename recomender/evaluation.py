@@ -13,7 +13,7 @@ class EvaluationGenerator():
     def __init__(self, items_df:DataFrame, ratings_df:DataFrame) :
         
         self.items_df = items_df
-        self.rating_df = ratings_df
+        self.ratings_df = ratings_df
         self.recomendations = []
 
         self.labels = {
@@ -79,7 +79,8 @@ class EvaluationGenerator():
     
     def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
         items_df = self.items_df.copy()
-        
+        ratings_df = self.ratings_df.copy()
+
         stopwords, lemma, stemm = pre_process_tec
         
         items_df.loc[:,"description"] = NLPProcessor().pre_process(items_df["description"], 
@@ -87,11 +88,12 @@ class EvaluationGenerator():
                                                 lemmatization = lemma, 
                                                 stemmization = stemm)
         recomender = RecomenderHandler(items_df)
-        user_ids = set(list(self.rating_df.userId))
+        ratings_df = ratings_df[ratings_df.itemId.isin(recomender.cosine_sim_df.index)]
+        user_ids = set(list(ratings_df.userId))
 
         recomendations_i = []
         for user_id in user_ids:
-            profile_rating = self.rating_df[self.rating_df.userId == user_id]
+            profile_rating = ratings_df[ratings_df.userId == user_id]
             
             #TODO ISSUE 1: non_user_itens_df = items_df[~items_df.itemId.isin(profile_rating.userId)]
             relevance = recomender.get_recomendations(items_df, profile_rating, frac, seed)

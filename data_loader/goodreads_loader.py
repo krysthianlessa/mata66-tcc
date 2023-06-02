@@ -9,7 +9,7 @@ from processor.dataset_limiter import RatingItemsLimiter
 
 class GoodReadsLoader(Loader):
 
-    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_users=6000, top_users_quantile=0.75, bottom_users_quantile=0.25, min_ratings=20) -> None:
+    def __init__(self, data_source_uri="data/goodreads-datasets/children", max_users=6000, top_users_quantile=0.75, bottom_users_quantile=0.25, min_ratings=30) -> None:
         super().__init__()
         
         self.data_source_uri = data_source_uri

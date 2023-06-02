@@ -1,7 +1,6 @@
 from recomender.evaluation import EvaluationGenerator
 from recomender.plotter import Plotter
 from data_loader.goodreads_loader import GoodReadsLoader
-import numpy as np
 
 def main():
 

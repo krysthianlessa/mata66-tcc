@@ -6,14 +6,11 @@ from nltk.corpus import stopwords
 from nltk.stem import PorterStemmer, WordNetLemmatizer
 from unidecode import unidecode
 import nltk
+nltk.download('wordnet')
+nltk.download('stopwords')
 
 class NLPProcessor():
     
-    def __init__(self) -> None:
-        try:
-            nltk.data.find('tokenizers/punkt')
-        except LookupError:
-            nltk.download('punkt')
 
     def __nlp_pre_process(self, corpus, stop_words_remv = True, lemmatization = True, stemmization = True) -> str:
     

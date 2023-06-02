@@ -3,7 +3,7 @@ import numpy as np
 
 class RatingItemsLimiter():
 
-    def __init__(self, max_users:int=6000, top_users_quantile=0.75, bottom_users_quantile=0.25, min_ratings=20, data_uri:str=None):
+    def __init__(self, max_users:int=6000, top_users_quantile=0.75, bottom_users_quantile=0.25, min_ratings=25, data_uri:str=None):
 
         self.items_cut_uri = f"{data_uri}/items_c_i{max_users}_t{top_users_quantile}_b{bottom_users_quantile}.csv"
         self.ratings_cut_uri = f"{data_uri}/ratings_c_i{max_users}_t{top_users_quantile}_b{bottom_users_quantile}.csv"
