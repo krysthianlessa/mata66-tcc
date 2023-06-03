@@ -1,6 +1,7 @@
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 from pandas import DataFrame, Series
+from numpy import reshape
 
 class RecomenderHandler():
 
@@ -33,19 +34,14 @@ class RecomenderHandler():
     
     def __jaccard_simiarity(self, text_array:Series, items_ids):
 
-        text_df = DataFrame({"text": text_array, "index": items_ids})
+        text_df = DataFrame({"text": text_array})
         text_df.loc[:,"text"] = text_df.text.str.replace(",","").str.replace(".","").str.split()
 
         text_cartesian_df = text_df.merge(text_df, how='cross')
         text_cartesian_df['similarity'] = [self.__jaccard_sim(set(text_x), set(text_y)) for text_x, text_y in zip(text_cartesian_df.text_x, text_cartesian_df.text_y)]
+        len_ = len(items_ids)
 
-        similarity_df = DataFrame(columns=items_ids, index=items_ids)
-
-        for i in text_cartesian_df.index:
-            cols_row = text_cartesian_df.loc[i]
-            similarity_df.loc[cols_row['index_x'], cols_row['index_y']] = cols_row['similarity']
-
-        return similarity_df
+        return DataFrame(reshape(text_cartesian_df['similarity'].values, (len_, len_)),columns=items_ids, index=items_ids)
     
         
     def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
