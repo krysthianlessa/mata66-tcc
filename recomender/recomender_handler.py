@@ -8,7 +8,7 @@ class RecomenderHandler():
     PEARSON_SIMILARITY = 'pearson'
     JACCARD_SIMILARITY = 'jaccard'
     
-    def __init__(self, items_df:Series, similarity:str=COSINE_SIMILARITY):
+    def __init__(self, items_df:DataFrame, similarity:str=COSINE_SIMILARITY):
 
         items_ids = items_df.index.to_list()
         vec_matrix = TfidfVectorizer().fit_transform(items_df["description"])
@@ -23,13 +23,17 @@ class RecomenderHandler():
                                            index=items_ids).corr(method="pearson")
         else:
             self.similarity_df = self.__jaccard_simiarity(items_df["description"], items_ids)
+
         
-    def __jaccard_sim(self, text_x_set:set, text_y_set:set): 
+    def __jaccard_sim(self, text_x_set:set, text_y_set:set):
+
         c = text_x_set.intersection(text_y_set)
         return len(c)*1.0 / (len(text_x_set) + len(text_y_set) - len(c))
     
-    def __jaccard_simiarity(self, text_array, items_ids):
-        text_df = DataFrame({"text": text_array}).reset_index()
+    
+    def __jaccard_simiarity(self, text_array:Series, items_ids):
+
+        text_df = DataFrame({"text": text_array, "index": items_ids})
         text_df.loc[:,"text"] = text_df.text.str.replace(",","").str.replace(".","").str.split()
 
         text_cartesian_df = text_df.merge(text_df, how='cross')
@@ -42,6 +46,7 @@ class RecomenderHandler():
             similarity_df.loc[cols_row['index_x'], cols_row['index_y']] = cols_row['similarity']
 
         return similarity_df
+    
         
     def __recommender(self, items_interacteds_ids, items_to_recomend, cosine_similarity_matrix)->list:
 
@@ -49,6 +54,7 @@ class RecomenderHandler():
         top_10_items = similaritys.mean().sort_values(ascending = False).iloc[0:10].index.to_list()
 
         return top_10_items
+    
         
     def get_recomendations(self, items_df:DataFrame, profile_ratings_df:DataFrame, frac:float, seed) -> list:
         train_profile_ratings = profile_ratings_df.sample(frac=frac, random_state=seed)
