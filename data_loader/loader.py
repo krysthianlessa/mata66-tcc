@@ -2,10 +2,10 @@
 
 class Loader():
 
-    def load_itens(self):
+    def __load_itens(self):
         pass
 
-    def load_ratings(self):
+    def __load_ratings(self):
         pass
 
     

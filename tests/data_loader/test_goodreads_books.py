@@ -11,8 +11,8 @@ class TestGoodReadsBooks(unittest.TestCase):
     def test_load_items_and_ratings(self):
 
         good_books_loader = GoodReadsLoader()
-        items_loaded_df = good_books_loader.load_itens()
-        ratings_loaded_df = good_books_loader.load_ratings()
+        items_loaded_df = good_books_loader.__load_itens()
+        ratings_loaded_df = good_books_loader.__load_ratings()
 
         self.assertTrue(len(items_loaded_df.index) > 1000)
         self.assertTrue(len(ratings_loaded_df.index) > 1000)

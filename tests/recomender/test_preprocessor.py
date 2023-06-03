@@ -25,7 +25,7 @@ class TestMovieDataset(unittest.TestCase):
 
     def test_join_and_process(self):
         movie_loader = MovieLoader("data/ml-latest-small/")
-        items_df = movie_loader.load_itens()
+        items_df = movie_loader.__load_itens()
    
         nan_values_df = items_df.isna().sum()
         self.assertTrue(nan_values_df['description'] == 0, nan_values_df['description'])

@@ -28,6 +28,16 @@ $pip3 install -r requirements.txt
 <br />
 <br />
 
+## Run
+
+- Fallow the steps to retrieve the dataset in each dataset folder, which you want to run
+- Run : \
+    main.ipynb
+    
+    or
+
+
+    $main.py <i>dataset-name</i>
 
 ## Tests
 

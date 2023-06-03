@@ -37,6 +37,7 @@ class RatingItemsLimiter():
         users_ratings_counts_df = users_ratings_counts_df[users_ratings_counts_df['count'] > bottom_cut].iloc[0:self.max_users]
    
         ratings_df = ratings_df.loc[ratings_df['userId'].isin(users_ratings_counts_df.index)]
-        items_df = items_df.loc[np.intersect1d(items_df.index, ratings_df.itemId.unique())]
+        items_ids_intersect = np.intersect1d(items_df.index, ratings_df.itemId.unique())
+        items_df = items_df.loc[items_ids_intersect]
 
-        return items_df, ratings_df
+        return items_df, ratings_df.loc[ratings_df.itemId.isin(items_ids_intersect)]

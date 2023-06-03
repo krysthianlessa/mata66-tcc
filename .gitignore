@@ -7,3 +7,4 @@
 **.gz
 **.zip
 **.json
+!data/supported_datasets.json

@@ -1,29 +1,36 @@
+from processor.items_processor import ItemProcessor
+from processor.ratings_procesor import RatingProcessor
+
 import pandas as pd
 import os
 import numpy as np
 
 class JesterJokeLoader():
 
-    def __init__(self, data_source_uri:str) -> None:
+    def __init__(self, data_source_uri="data/jester-joke") -> None:
         self.data_source_uri = data_source_uri
-        
 
-    def load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv", rebuild=False):
+        self.item_processor = ItemProcessor(self.__load_items())
+        self.items_df = self.item_processor.process()
+        self.ratings_df = RatingProcessor(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
+        self.ratings_df = self.ratings_df.loc[self.ratings_df.itemId.isin(self.items_df.index)]
+
+    def __load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv", rebuild=False):
         
         if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
             return pd.read_csv(f"{self.data_source_uri}/{export_name}")
         else:
             return self.__save_and_load_items(description_matrix_uri, export_name)
 
-        
-    def load_ratings(self, matrix_ratings_name:str="ratings_matrix.csv", export_name="ratings.csv", rebuild=False):
-        
 
+    def __load_ratings(self, matrix_ratings_name:str="ratings_matrix.csv", export_name="ratings.csv", rebuild=False):
+        
         if not rebuild and os.path.isfile(f"{self.data_source_uri}/{export_name}"):
             return pd.read_csv(f"{self.data_source_uri}/{export_name}")
         else:
             return self.__save_and_load_ratings(matrix_ratings_name, export_name)
         
+
     def __save_and_load_items(self, description_matrix_uri:str="descriptions_matrix.csv", export_name="items.csv") -> pd.DataFrame:
 
         joke_desc_df = None
@@ -35,6 +42,7 @@ class JesterJokeLoader():
         joke_desc_df.to_csv(f"{self.data_source_uri}/{export_name}", index=False)
         return joke_desc_df
     
+
     def __save_and_load_ratings(self, matrix_name:str="ratings_matrix.csv", export_name="ratings.csv") -> pd.DataFrame:
 
         user_ratings_matrix = pd.read_csv(f"{self.data_source_uri}/{matrix_name}", header=None)
