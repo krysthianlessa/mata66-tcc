@@ -32,13 +32,15 @@ class MovieLoader(Loader):
         
 
     def __build_ratings(self) -> pd.DataFrame:
-        return pd.read_csv(f"{self.data_source_uri}/ratings_df.csv")
-    
+        ratings_df = pd.read_csv(f"{self.data_source_uri}/ratings_brute.csv").rename(columns={"movieId": "itemId"})
+        ratings_df.to_csv(f"{self.data_source_uri}/ratings_df.csv", index=False)
+        return ratings_df
+
 
     def __build_items(self) -> pd.DataFrame:
 
-        description_df = pd.read_csv(f"{self.data_source_uri}/overviews.csv")['movieId', 'overview']
-        movies_df = pd.read_csv(f"{self.data_source_uri}/movies.csv")['movieId', 'genres']
+        description_df = pd.read_csv(f"{self.data_source_uri}/overviews.csv")[['movieId', 'overview']]
+        movies_df = pd.read_csv(f"{self.data_source_uri}/movies.csv")[['movieId', 'genres']]
         items_df = self.__join_and_process(description_df, movies_df)
         items_df.to_csv(f"{self.data_source_uri}/items_df.csv", index=True)
         return items_df
@@ -58,7 +60,7 @@ class MovieLoader(Loader):
         return self.__create_bag_of_words(movie_details_df)
     
 
-    def __create_bag_of_words(self, df:pd.DataFrame, columns=["description", "genres"]) -> pd.DataFrame:
+    def __create_bag_of_words(self, df:pd.DataFrame, columns=["overview", "genres"]) -> pd.DataFrame:
 
         df.loc[:,'bag_of_words'] = ''
         space_col = df['bag_of_words'].copy() + " "
@@ -66,4 +68,4 @@ class MovieLoader(Loader):
             df.loc[:,"bag_of_words"] = df['bag_of_words'] + space_col + df[col]
 
         df.loc[:,"description"] = df["bag_of_words"]
-        return df[["itemId","description", "title"]]
+        return df[["itemId","description"]]
