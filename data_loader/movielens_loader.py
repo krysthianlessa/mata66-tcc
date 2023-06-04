@@ -49,7 +49,7 @@ class MovieLoader(Loader):
     def __join_and_process(self, description_df:pd.DataFrame, movies_df:pd.DataFrame) -> pd.DataFrame:
 
         movies_df.rename(columns={"movieId": "itemId"}, inplace=True)
-        description_df.rename(columns={'movieId', "itemId"}, inplace=True)
+        description_df.rename(columns={'movieId': "itemId"}, inplace=True)
         description_df = description_df.dropna()
         movies_df = movies_df[movies_df.itemId.isin(description_df.itemId)]
         movie_details_df = movies_df.set_index("itemId").join(description_df.set_index("itemId"), how='left')

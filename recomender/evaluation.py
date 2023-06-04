@@ -2,10 +2,8 @@ from recomender.nlp_processor import NLPProcessor
 from recomender.recomender_handler import RecomenderHandler
 
 import os
-from pandas import DataFrame, read_csv
+from pandas import DataFrame
 import numpy as np
-import json
-import glob
 
 class EvaluationGenerator():
 
@@ -67,15 +65,15 @@ class EvaluationGenerator():
         else:
             return 0.0
         
-    def generate_from_combination(self, similarity_method, frac=0.75, seed=15):
+    def generate_from_combination(self, frac=0.75, seed=15):
         
         for techniques in self.labels.keys():
-            self.generate(techniques, similarity_method, frac, seed)
+            self.generate(techniques, frac, seed)
         self.metrics_gains_df = self.get_gains_df()
 
         return self
     
-    def generate(self, pre_process_tec:tuple, sim_method:str, frac=0.75, seed=15):
+    def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
         items_df = self.items_df.copy()
         ratings_df = self.ratings_df.copy()
 
@@ -85,7 +83,7 @@ class EvaluationGenerator():
                                                 stopwords_removal = stopwords, 
                                                 lemmatization = lemma, 
                                                 stemmization = stemm)
-        recomender = RecomenderHandler(items_df, sim_method)
+        recomender = RecomenderHandler(items_df)
         #ratings_df = ratings_df[ratings_df.itemId.isin(recomender.cosine_sim_df.index)]
         ratings_group = ratings_df.groupby(by="userId")
         recomendations_k = []
@@ -110,10 +108,10 @@ class EvaluationGenerator():
         msg = f"combination {k}"
         print(msg, end="\r")
 
-        self.recomendations[sim_method] = {"k": k,
-                                           "label": self.labels[pre_process_tec],
-                                           "dataset": DataFrame(recomendations_k)
-                                            }
+        self.recomendations.append({"k": k,
+                                    "label": self.labels[pre_process_tec],
+                                    "dataset": DataFrame(recomendations_k)
+                                    })
         return self
 
     def export(self, name, replace_last=False) -> str:
