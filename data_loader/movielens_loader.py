@@ -32,10 +32,8 @@ class MovieLoader(Loader):
         
 
     def __build_ratings(self) -> pd.DataFrame:
-        ratings_df = pd.read_csv(f"{self.data_source_uri}/ratings_brute.csv").rename(columns={"movieId": "itemId"})
-        ratings_df.to_csv(f"{self.data_source_uri}/ratings_df.csv", index=False)
-        return ratings_df
-
+        return pd.read_csv(f"{self.data_source_uri}/ratings_brute.csv").rename(columns={"movieId":"itemId"})
+    
 
     def __build_items(self) -> pd.DataFrame:
 

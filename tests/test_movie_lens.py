@@ -1,9 +1,8 @@
-from processor.dataset_limiter import MovieDataset, RatingProcessor
 from recomender.evaluation import EvaluationGenerator
-from recomender.evaluation import EvaluationLoader
-
+from data_loader.movielens_loader import MovieLoader
 import pandas as pd
 import unittest
+import glob
 
 class TestMovieLensRecomenderEvaluation(unittest.TestCase):
 
@@ -13,47 +12,23 @@ class TestMovieLensRecomenderEvaluation(unittest.TestCase):
 
     def test_main(self):
 
+        movie_lens_loader = MovieLoader()
         movies_desc_df = pd.read_csv("data/ml-latest-small/overviews.csv")
-        movie_processor = MovieDataset(movies_desc_df)
+        items_df = movie_lens_loader.items_df
+        ratings_df = movie_lens_loader.ratings_df
 
-        self.assertTrue("description" in movie_processor.items_df.columns, movie_processor.items_df.columns)
-        self.assertTrue("itemId" in movie_processor.items_df.columns, movie_processor.items_df.columns)
-
-        movie_details_df = movie_processor.join_and_process(movies_df=pd.read_csv('data/ml-latest-small/movies.csv'))
-        
-        self.assertTrue(len(movie_details_df.index) > len(movies_desc_df.index)*0.3)
-        
-        init_ratings_df = pd.read_csv('data/ml-latest-small/ratings.csv')
-        ratings_dataset = RatingProcessor(ratings_df=init_ratings_df, 
-                                item_id_col="movieId", 
-                                user_id_col="userId")
-        self.assertTrue("itemId" in ratings_dataset.ratings_df.columns, ratings_dataset.ratings_df.columns)
-        
-        ratings_df = ratings_dataset.process(movie_processor.missing_desc_ids)
-        self.assertTrue(len(ratings_df.index) > len(init_ratings_df.index)*0.3)
+        self.assertTrue(len(items_df.index) > len(movies_desc_df.movieId.unique())*0.3)
         self.assertTrue(len(ratings_df.userId.unique()) == 465)
 
-        combination_pre_process_techniques = [
-            (1, (False, False, False)),
-            (2, (False, False, True)),
-            (3, (False, True, False)),
-            (4, (False, True, True)),
-            (5, (True, False, False)),
-            (6, (True, False, True)),
-            (7, (True, True, False)),
-            (8, (True, True, True)),
-        ]
-
-        evaluate_generator = EvaluationGenerator(items_df = movie_details_df, 
-                                                ratings_df=ratings_df).generate_from_combination(combination_pre_process_techniques)
-
-        recs_metrics_loaded = EvaluationLoader().load_recomendations("result/movie-lens-small/first_run")
-        for i in range(len(recs_metrics_loaded)):
+        evaluate_generator = EvaluationGenerator(items_df = items_df.loc, 
+                                                ratings_df=ratings_df,
+                                                similarity_method="cosine").generate_from_combination()
+        i = 0
+        for rec_uri in glob.glob("result/movie-lens-small/first_run/*.csv"):
             
             rec_metrics = evaluate_generator.recomendations[i]
-            rec_metric_check = recs_metrics_loaded[f"recomendations_{i+1}"]
+            rec_metric_check = pd.read_csv(rec_uri)
 
-            self.assertTrue(rec_metrics['label'] == rec_metric_check['label'])
             self.assertTrue(rec_metrics['dataset']['prc_3'].mean() > rec_metric_check['dataset']['prc_3'].mean()*0.7, 
                             f"{rec_metrics['dataset']['prc_3'].mean()} <= {rec_metric_check['dataset']['prc_3'].mean()*0.7}")
             
@@ -80,6 +55,8 @@ class TestMovieLensRecomenderEvaluation(unittest.TestCase):
             
             self.assertTrue(rec_metrics['dataset']['rr_10'].mean() > rec_metric_check['dataset']['rr_10'].mean()*0.7,
                             f"{rec_metrics['dataset']['rr_10'].mean()} <= {rec_metric_check['dataset']['rr_10'].mean()*0.7}")
+
+            i += 1
 
 if __name__ == '__main__':
     unittest.main()

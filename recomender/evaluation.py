@@ -7,10 +7,12 @@ import numpy as np
 
 class EvaluationGenerator():
 
-    def __init__(self, items_df:DataFrame, ratings_df:DataFrame) :
+    def __init__(self, items_df:DataFrame, ratings_df:DataFrame, similarity_method:str):
         
         self.items_df = items_df
         self.ratings_df = ratings_df
+        self.similarity_method = similarity_method
+
         self.recomendations = []
 
         self.labels = {
@@ -24,14 +26,18 @@ class EvaluationGenerator():
             (8, True, True, True): 'todas as técnincas'
         }
 
+
     def get_export_folder(self, name, replace_last) -> str:
         
-        folder_qtd = len(os.listdir(f"result/{name}"))
+        if not os.path.isdir(f"result/{name}/{self.similarity_method}"):
+            os.makedirs(f"result/{name}/{self.similarity_method}")
+
+        folder_qtd = len(os.listdir(f"result/{name}/{self.similarity_method}"))
         
-        if replace_last and os.path.isdir(f"result/{name}/run{folder_qtd-1}"):
-            self.export_folder = f"result/{name}/run{folder_qtd-1}"
+        if replace_last and os.path.isdir(f"result/{name}/{self.similarity_method}/run{folder_qtd-1}"):
+            self.export_folder = f"result/{name}/{self.similarity_method}/run{folder_qtd-1}"
         else:
-            self.export_folder = f"result/{name}/run{folder_qtd}"
+            self.export_folder = f"result/{name}/{self.similarity_method}/run{folder_qtd}"
 
         if not os.path.isdir(self.export_folder):
             try:
@@ -40,6 +46,7 @@ class EvaluationGenerator():
                 print(f"Create path {self.export_folder} was no possible ")
         return self.export_folder
     
+
     def __reciprocal_rank(self, relevance_array) -> float:
         relevance_list_size = len(relevance_array)
         if relevance_list_size == 0:
@@ -49,6 +56,7 @@ class EvaluationGenerator():
                 return 1 / (i + 1)
         return 0.0
     
+
     def __avg_precision_from_list(self, relevance_array) -> float:
         relevance_list_size = len(relevance_array)
         if relevance_list_size == 0:
@@ -65,6 +73,7 @@ class EvaluationGenerator():
         else:
             return 0.0
         
+
     def generate_from_combination(self, frac=0.75, seed=15):
         
         for techniques in self.labels.keys():
@@ -73,6 +82,7 @@ class EvaluationGenerator():
 
         return self
     
+
     def generate(self, pre_process_tec:tuple, frac=0.75, seed=15):
         items_df = self.items_df.copy()
         ratings_df = self.ratings_df.copy()
@@ -83,7 +93,8 @@ class EvaluationGenerator():
                                                 stopwords_removal = stopwords, 
                                                 lemmatization = lemma, 
                                                 stemmization = stemm)
-        recomender = RecomenderHandler(items_df)
+        recomender = RecomenderHandler(items_df, self.similarity_method)
+        print("start user recomendations.")
         #ratings_df = ratings_df[ratings_df.itemId.isin(recomender.cosine_sim_df.index)]
         ratings_group = ratings_df.groupby(by="userId")
         recomendations_k = []
@@ -114,18 +125,22 @@ class EvaluationGenerator():
                                     })
         return self
 
+
     def export(self, name, replace_last=False) -> str:
 
         self.get_export_folder(name, replace_last)
-
         self.metrics_gains_df.to_csv(f"{self.export_folder}/metrics_gains.csv", index=False)
+        
         return self.export_folder
     
+
     def get_gains_df(self) -> DataFrame:
         return DataFrame(self.get_gains("prc") + self.get_gains("ap") + self.get_gains("rr"))
     
+
     def get_gains(self, metric:str) -> list:
         return self.gains(self.recomendations, metric)
+    
     
     def gains(self, recomendations: list, metric="ap") -> list:
         
@@ -147,21 +162,40 @@ class EvaluationGenerator():
             else:
                 gains_cut = []
                 labels = []
+
+                negative_gains_cut = []
+                negative_labels = []
+
                 for combination_p in combinations_range:
                     gain = ((recomendations[combination_p]['dataset'][f'{metric}_{list_size}'].mean() / non_tecnique_ap) - 1)*100.0
-                    if gain >= 0:
+                    
+                    if gain < 0:
+                        negative_gains_cut.append(gain)
+                        negative_labels.append(self.labels[keys_labels[combination_p]])
+                    else:    
                         gains_cut.append(gain)
                         labels.append(self.labels[keys_labels[combination_p]])
-                try:
+
+                if len(gains_cut) > 0:
                     min_p = np.argmin(gains_cut)
                     max_p = np.argmax(gains_cut)
-                    gains_cuts_list.append({"metric": metric, 
+                    min_gain = gains_cut[min_p]
+                    max_gain = gains_cut[max_p]
+                    max_label = labels[max_p]
+                    min_label = labels[min_p]
+                else:
+                    min_p = np.argmin(negative_gains_cut)
+                    max_p = np.argmax(negative_gains_cut)
+                    min_gain = negative_gains_cut[min_p]
+                    max_gain = negative_gains_cut[max_p]
+                    max_label = negative_labels[max_p]
+                    min_label = negative_labels[min_p]
+                
+                gains_cuts_list.append({"metric": metric, 
                                             "list_size": list_size, 
-                                            "min_per": gains_cut[min_p], 
-                                            "max_per": gains_cut[max_p],
-                                            "min_technique": labels[min_p],
-                                            "max_techinque": labels[max_p]})
-                except:
-                    print(f"Error when calculate min and max of metric {metric} and list size {list_size}")
+                                            "min_per": min_gain, 
+                                            "max_per": max_gain,
+                                            "min_technique": min_label,
+                                            "max_techinque": max_label})
 
         return gains_cuts_list

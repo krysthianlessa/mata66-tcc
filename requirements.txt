@@ -7,3 +7,4 @@ rake-nltk==1.0.6
 matplotlib==3.7.1
 unittest2==1.1.0
 pytest==7.3.1
+tensorflow
