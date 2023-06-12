@@ -19,6 +19,8 @@ $source bin\activate
 
 $pip3 install -r requirements.txt
 
+- Install pytorch
+
 ## Some results preview
 
 <img src="result/movie-lens-small/first_run/ap.png" width="70%" />
