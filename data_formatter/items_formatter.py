@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-class ItemProcessor():
+class ItemFormatter():
 
     def __init__(self, items_df: pd.DataFrame) -> None:
         print(f"{len(items_df.index)} initial items.")

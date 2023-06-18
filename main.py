@@ -23,7 +23,7 @@ def run_fit_and_evaluation_tests(name: str, items_df, ratings_df):
     
     print(f"{len(items_df)} items, {len(ratings_df.userId.unique())} users and {len(ratings_df)} ratings")
 
-    for similarity_method in [RecomenderHandler.JACCARD_SIMILARITY]:
+    for similarity_method in [RecomenderHandler.JACCARD_SIMILARITY, RecomenderHandler.COSINE_SIMILARITY]:
         print(similarity_method)
         evaluate_generator = EvaluationGenerator(items_df,ratings_df,similarity_method).generate_from_combination()
         export_folder = evaluate_generator.export(name=name, replace_last=True)

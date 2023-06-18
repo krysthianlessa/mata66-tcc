@@ -3,9 +3,9 @@ import numpy as np
 import os
 
 from data_loader.loader import Loader
-from processor.items_processor import ItemProcessor
-from processor.ratings_procesor import RatingProcessor
-from processor.dataset_limiter import RatingItemsLimiter
+from data_formatter.items_formatter import ItemFormatter
+from data_formatter.ratings_formatter import RatingFormatter
+from data_formatter.dataset_limiter import RatingItemsLimiter
 
 class GoodReadsLoader(Loader):
 
@@ -15,9 +15,9 @@ class GoodReadsLoader(Loader):
         self.data_source_uri = data_source_uri
         self.limiter = RatingItemsLimiter(max_users, top_users_quantile, bottom_users_quantile, min_ratings, data_source_uri)
 
-        self.item_processor = ItemProcessor(self.__load_items())
+        self.item_processor = ItemFormatter(self.__load_items())
         self.items_df = self.item_processor.process()
-        self.ratings_df = RatingProcessor(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
+        self.ratings_df = RatingFormatter(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
         self.items_df, self.ratings_df = self.limiter.limit(self.items_df, self.ratings_df)
 
     def __load_items(self, rebuild=False) -> pd.DataFrame:

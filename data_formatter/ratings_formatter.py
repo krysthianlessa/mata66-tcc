@@ -1,6 +1,6 @@
 import pandas as pd
 
-class RatingProcessor():
+class RatingFormatter():
     
     def __init__(self, ratings_df:pd.DataFrame):
         

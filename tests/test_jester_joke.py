@@ -1,7 +1,4 @@
 from data_loader.jester_joke_loader import JesterJokeLoader
-
-import pandas as pd
-
 import unittest
 
 class TestJesterJokeRecomender(unittest.TestCase):

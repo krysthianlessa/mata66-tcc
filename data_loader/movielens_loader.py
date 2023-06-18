@@ -1,6 +1,6 @@
 from data_loader.loader import Loader 
-from processor.items_processor import ItemProcessor
-from processor.ratings_procesor import RatingProcessor
+from data_formatter.items_formatter import ItemFormatter
+from data_formatter.ratings_formatter import RatingFormatter
 import pandas as pd
 import os
 
@@ -9,9 +9,9 @@ class MovieLoader(Loader):
     def __init__(self, data_source_uri="data/ml-latest-small") -> None:
         self.data_source_uri = data_source_uri
 
-        self.item_processor = ItemProcessor(self.__load_items())
+        self.item_processor = ItemFormatter(self.__load_items())
         self.items_df = self.item_processor.process()
-        self.ratings_df = RatingProcessor(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
+        self.ratings_df = RatingFormatter(self.__load_ratings()).process(self.item_processor.missing_desc_ids)
         self.ratings_df = self.ratings_df.loc[self.ratings_df.itemId.isin(self.items_df.index)]
 
 
